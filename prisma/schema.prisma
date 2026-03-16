@@ -1,0 +1,57 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+// L'utilisateur authentifié (via Clerk)
+model User {
+  id            String   @id @default(cuid())
+  clerkUserId   String   @unique // L'ID fourni par Clerk Auth
+  email         String   @unique
+  name          String?
+  
+  // Monétisation (Stripe)
+  stripeCustomerId String? @unique
+  isPro            Boolean @default(false)
+  tier             String  @default("bivouac") // "bivouac" (free) ou "pro"
+  searchesCount    Int     @default(0) // Limiter à 3 pour le plan gratuit
+  
+  // Relations
+  savedHotels   SavedHotel[]
+  
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+// Les hôtels sauvegardés dans l'historique de l'utilisateur
+model SavedHotel {
+  id            String   @id @default(cuid())
+  
+  // Données de l'hôtel (simplifiées pour l'historique)
+  hotelId       String   // ID Travelpayouts ou Amadeus
+  name          String
+  location      String
+  imageUrl      String?
+  price         Float?
+  currency      String?  @default("EUR")
+  rating        Float?
+  
+  // Méta-données de la recherche IA
+  vibe          String?  // Ex: "Aventure", "Détente"
+  
+  // Relation avec l'utilisateur
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId        String
+  
+  createdAt     DateTime @default(now())
+
+  @@index([userId])
+}

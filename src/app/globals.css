@@ -1,0 +1,48 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: #F5F5DC;
+    /* Cream */
+    --foreground: #1B3022;
+    /* Forest green */
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --background: #1B3022;
+      /* Forest dark */
+      --foreground: #F5F5DC;
+      /* Cream dark */
+    }
+  }
+}
+
+body {
+  color: var(--foreground);
+  background: var(--background);
+  font-family: Arial, Helvetica, sans-serif;
+  @apply antialiased;
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  .glass {
+    @apply bg-white/20 backdrop-blur-md border border-white/30 shadow-lg dark:bg-black/20 dark:border-white/10;
+  }
+
+  /* Hide scrollbars everywhere they're not needed */
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+}
