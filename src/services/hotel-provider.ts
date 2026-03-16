@@ -46,26 +46,56 @@ async function getAmadeusToken(): Promise<string | null> {
 }
 
 // ─── City name → IATA code ───────────────────────────────────────────────────
+// ⚠️ Only verified IATA codes — wrong codes = wrong country!
 const CITY_CODES: Record<string, string> = {
+  // France
   paris: "PAR", lyon: "LYS", marseille: "MRS", bordeaux: "BOD", toulouse: "TLS",
   nice: "NCE", strasbourg: "SXB", rennes: "RNS", lille: "LIL", nantes: "NTE",
-  annecy: "NCY", grenoble: "GNB", montpellier: "MPL", brest: "BES",
-  bruxelles: "BRU", brussels: "BRU", mons: "QMX", liege: "LGG", liège: "LGG",
-  gent: "GNE", gand: "GNE", bruges: "BRU", anvers: "ANR", antwerp: "ANR",
-  namur: "QNM", charleroi: "CRL", tournai: "TUO",
+  annecy: "NCY", grenoble: "GNB", montpellier: "MPL",
+  // Belgique — codes IATA vérifiés uniquement
+  bruxelles: "BRU", brussels: "BRU",
+  liege: "LGG", "liège": "LGG",
+  charleroi: "CRL",
+  anvers: "ANR", antwerp: "ANR",
+  gent: "GNE", gand: "GNE",
+  // Europe
   amsterdam: "AMS", london: "LON", rome: "ROM", madrid: "MAD",
   barcelona: "BCN", berlin: "BER", munich: "MUC", vienna: "VIE",
   lisbon: "LIS", prague: "PRG", budapest: "BUD", warsaw: "WAW",
   zurich: "ZRH", geneva: "GVA", milan: "MIL", florence: "FLR",
   luxembourg: "LUX", cologne: "CGN", frankfurt: "FRA",
+  rotterdam: "RTM", stockholm: "STO", oslo: "OSL", copenhagen: "CPH",
+  dublin: "DUB", edinburgh: "EDI", athens: "ATH",
 };
+
+// Villes sans code IATA fiable → fallback mock (évite les erreurs de pays)
+const FALLBACK_BLACKLIST = new Set([
+  "spa", "namur", "mons", "durbuy", "dinant", "arlon", "bastogne",
+  "tournai", "verviers", "ostende", "knokke", "rochefort", "han", "coo",
+  "bouillon", "chimay", "marche", "huy", "wavre", "nivelles", "bruges",
+  "ardennes", "fagne", "wallonie", "belgique", "belgium",
+]);
 
 function getCityCode(location: string): string | null {
   const normalized = location.toLowerCase().trim();
+
+  // Match direct dans les codes connus
   for (const [key, code] of Object.entries(CITY_CODES)) {
     if (normalized.includes(key)) return code;
   }
-  return normalized.slice(0, 3).toUpperCase();
+
+  // Si la ville est dans la blacklist → null (fallback safe)
+  for (const word of FALLBACK_BLACKLIST) {
+    if (normalized.includes(word)) return null;
+  }
+
+  // Auto 3-letter uniquement pour mots longs (évite SPA=Spartanburg etc.)
+  const firstWord = normalized.split(/[\s,]+/)[0];
+  if (firstWord.length >= 6) {
+    return firstWord.slice(0, 3).toUpperCase();
+  }
+
+  return null;
 }
 
 // ─── Coordinates lookup ──────────────────────────────────────────────────────
