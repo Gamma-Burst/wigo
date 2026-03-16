@@ -2,47 +2,181 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ── Premium fonts ── */
+@import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&family=DM+Serif+Display:ital@0;1&display=swap');
+
 @layer base {
   :root {
-    --background: #F5F5DC;
-    /* Cream */
-    --foreground: #1B3022;
-    /* Forest green */
+    /* Brand palette */
+    --background: #FAFAF7;
+    --foreground: #141410;
+    --accent: #E8652A;
+    --accent-light: #F5A07A;
+    --forest: #1E3A2F;
+    --forest-light: #2D5441;
+    --muted: #6B6B5E;
+    --border: rgba(20, 20, 16, 0.08);
+    --border-strong: rgba(20, 20, 16, 0.15);
+    --card: #FFFFFF;
+    --card-hover: #F5F5F0;
+
+    /* Fonts */
+    --font-display: 'Syne', system-ui, sans-serif;
+    --font-body: 'DM Sans', system-ui, sans-serif;
+    --font-serif: 'DM Serif Display', Georgia, serif;
   }
 
   @media (prefers-color-scheme: dark) {
     :root {
-      --background: #1B3022;
-      /* Forest dark */
-      --foreground: #F5F5DC;
-      /* Cream dark */
+      --background: #0E0E0B;
+      --foreground: #F2F2EE;
+      --accent: #F07340;
+      --accent-light: #F5A07A;
+      --forest: #2D5441;
+      --forest-light: #3D7059;
+      --muted: #9B9B8E;
+      --border: rgba(242, 242, 238, 0.08);
+      --border-strong: rgba(242, 242, 238, 0.15);
+      --card: #1A1A16;
+      --card-hover: #222220;
     }
   }
+}
+
+html {
+  scroll-behavior: smooth;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 body {
   color: var(--foreground);
   background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
-  @apply antialiased;
+  font-family: var(--font-body);
 }
 
-@layer utilities {
-  .text-balance {
-    text-wrap: balance;
-  }
+/* ── Typography helpers ── */
+.font-display { font-family: var(--font-display) !important; }
+.font-serif-display { font-family: var(--font-serif) !important; }
 
-  .glass {
-    @apply bg-white/20 backdrop-blur-md border border-white/30 shadow-lg dark:bg-black/20 dark:border-white/10;
-  }
+/* ── Glassmorphism ── */
+.glass {
+  background: rgba(255, 255, 255, 0.12);
+  backdrop-filter: blur(16px) saturate(180%);
+  -webkit-backdrop-filter: blur(16px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+}
 
-  /* Hide scrollbars everywhere they're not needed */
-  .scrollbar-hide {
-    -ms-overflow-style: none;
-    scrollbar-width: none;
-  }
+.glass-dark {
+  background: rgba(0, 0, 0, 0.25);
+  backdrop-filter: blur(16px) saturate(180%);
+  -webkit-backdrop-filter: blur(16px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
 
-  .scrollbar-hide::-webkit-scrollbar {
-    display: none;
-  }
+/* ── Scrollbar ── */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.scrollbar-hide::-webkit-scrollbar { display: none; }
+
+/* ── Text balance ── */
+.text-balance { text-wrap: balance; }
+
+/* ── Gradient text ── */
+.gradient-text {
+  background: linear-gradient(135deg, var(--accent) 0%, #F5A07A 50%, #FFCC80 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.gradient-text-forest {
+  background: linear-gradient(135deg, var(--forest) 0%, var(--forest-light) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ── Shimmer animation (skeleton loaders) ── */
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    var(--border) 25%,
+    var(--card-hover) 37%,
+    var(--border) 63%
+  );
+  background-size: 400% 100%;
+  animation: shimmer 1.4s ease infinite;
+}
+
+/* ── Motion: reveal animations ── */
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(24px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes scaleIn {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+.animate-slide-up { animation: slideUp 0.5s cubic-bezier(0.22, 1, 0.36, 1) both; }
+.animate-fade-in { animation: fadeIn 0.4s ease both; }
+.animate-scale-in { animation: scaleIn 0.4s cubic-bezier(0.22, 1, 0.36, 1) both; }
+
+/* Stagger helpers */
+.delay-100 { animation-delay: 0.1s; }
+.delay-200 { animation-delay: 0.2s; }
+.delay-300 { animation-delay: 0.3s; }
+.delay-400 { animation-delay: 0.4s; }
+
+/* ── Hero particle canvas ── */
+#wigo-canvas {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ── Card hover effects ── */
+.card-lift {
+  transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1),
+              box-shadow 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.card-lift:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 20px 60px -12px rgba(0, 0, 0, 0.15);
+}
+
+/* ── Input focus glow ── */
+.input-glow:focus {
+  box-shadow: 0 0 0 3px rgba(232, 101, 42, 0.15);
+  outline: none;
+}
+
+/* ── Accent gradient button ── */
+.btn-accent {
+  background: linear-gradient(135deg, #E8652A 0%, #C94E18 100%);
+  color: white;
+  font-weight: 600;
+  transition: all 0.2s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.btn-accent:hover {
+  transform: translateY(-1px) scale(1.01);
+  box-shadow: 0 8px 24px -4px rgba(232, 101, 42, 0.45);
+}
+.btn-accent:active {
+  transform: scale(0.98);
 }
