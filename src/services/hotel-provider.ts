@@ -85,9 +85,7 @@ function getCityCode(location: string): string | null {
   }
 
   // Si la ville est dans la blacklist → null (fallback safe)
-  for (const word of FALLBACK_BLACKLIST) {
-    if (normalized.includes(word)) return null;
-  }
+  if (Array.from(FALLBACK_BLACKLIST).some(word => normalized.includes(word))) return null;
 
   // Auto 3-letter uniquement pour mots longs (évite SPA=Spartanburg etc.)
   const firstWord = normalized.split(/[\s,]+/)[0];
