@@ -14,6 +14,42 @@ function FlightDetailDrawer({ flight, onClose }: { flight: FlightResult; onClose
   const formatDate = (iso: string) => new Date(iso).toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
   const cabinLabels: Record<string, string> = { ECONOMY: "Économique", PREMIUM_ECONOMY: "Premium Économique", BUSINESS: "Business", FIRST: "Première classe" };
 
+  const [isBooking, setIsBooking] = useState(false);
+  const [bookError, setBookError] = useState("");
+
+  const handleBook = async () => {
+    setIsBooking(true);
+    setBookError("");
+    try {
+      const res = await fetch("/api/flights/book", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          flightNumber: flight.flightNumber,
+          airline: flight.airlineName,
+          origin: flight.origin,
+          destination: flight.destination,
+          departureTime: flight.departureTime,
+          returnTime: flight.returnFlight?.departureTime,
+          price: flight.price,
+          currency: flight.currency,
+          cabin: flight.cabin,
+          passengers: 1,
+        }),
+      });
+      const data = await res.json();
+      if (data.url) {
+        window.location.href = data.url;
+      } else {
+        setBookError(data.error || "Erreur lors de la réservation");
+        setIsBooking(false);
+      }
+    } catch {
+      setBookError("Erreur de connexion. Réessayez.");
+      setIsBooking(false);
+    }
+  };
+
   return (
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center" onClick={onClose}>
       {/* Backdrop */}
@@ -145,12 +181,30 @@ function FlightDetailDrawer({ flight, onClose }: { flight: FlightResult; onClose
 
         {/* CTA */}
         <div className="sticky bottom-0 p-5 bg-white/95 dark:bg-[#141412]/95 backdrop-blur-xl border-t border-foreground/[0.06]">
-          <button className="w-full btn-accent py-4 rounded-xl text-base flex items-center justify-center gap-2">
-            <CreditCard className="w-5 h-5" />
-            Réserver pour {flight.price}€
+          {bookError && (
+            <div className="mb-3 p-3 bg-red-50 dark:bg-red-900/10 border border-red-200/30 dark:border-red-800/20 rounded-xl">
+              <p className="text-xs font-semibold text-red-600 dark:text-red-400">{bookError}</p>
+            </div>
+          )}
+          <button
+            onClick={handleBook}
+            disabled={isBooking}
+            className="w-full btn-accent py-4 rounded-xl text-base flex items-center justify-center gap-2 disabled:opacity-60"
+          >
+            {isBooking ? (
+              <>
+                <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                Redirection vers le paiement...
+              </>
+            ) : (
+              <>
+                <CreditCard className="w-5 h-5" />
+                Réserver pour {flight.price}€
+              </>
+            )}
           </button>
           <p className="text-center text-xs text-foreground/30 mt-2">
-            Vous serez redirigé vers la page de paiement sécurisée
+            Paiement sécurisé via Stripe · Vous serez redirigé
           </p>
         </div>
       </div>
