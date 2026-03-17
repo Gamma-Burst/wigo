@@ -168,34 +168,42 @@ export default function TrendingSection({ activeCategory }: TrendingSectionProps
                 )}
 
                 {/* Cards grid */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 stagger-children">
                     {items.map((item, i) => (
-                        <article key={item.id} className="group bg-white dark:bg-zinc-900 border border-foreground/8 rounded-2xl overflow-hidden hover:shadow-xl hover:shadow-foreground/10 hover:-translate-y-1 transition-all duration-300">
+                        <article key={item.id} className="group bg-white dark:bg-[#141412] border border-foreground/[0.06] rounded-2xl overflow-hidden card-3d-subtle animate-slide-up">
                             {/* Image */}
-                            <div className="relative h-48 overflow-hidden">
-                                <Image src={item.image} alt={item.name} fill className="object-cover group-hover:scale-105 transition-transform duration-500" />
+                            <div className="relative h-52 overflow-hidden">
+                                <Image src={item.image} alt={item.name} fill className="object-cover group-hover:scale-110 transition-transform duration-700" />
+                                {/* Gradient overlay */}
+                                <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-black/10 to-transparent" />
                                 {/* Rank badge */}
-                                <div className="absolute top-3 left-3 w-8 h-8 rounded-full bg-white/95 backdrop-blur shadow-lg flex items-center justify-center font-black text-sm text-foreground">
+                                <div className="absolute top-3 left-3 w-9 h-9 rounded-xl bg-white/95 backdrop-blur shadow-lg flex items-center justify-center font-black text-sm text-foreground">
                                     {i + 1}
                                 </div>
                                 {/* Tag */}
-                                <div className="absolute top-3 right-12 bg-accent text-white text-xs font-bold px-2.5 py-1 rounded-full shadow">
+                                <div className="absolute top-3 right-12 bg-accent text-white text-xs font-bold px-3 py-1.5 rounded-full shadow-lg shadow-accent/20">
                                     {item.tag}
                                 </div>
                                 {/* Like button */}
                                 <button onClick={() => toggleLike(item.id)}
-                                    className={`absolute top-3 right-3 w-8 h-8 rounded-full flex items-center justify-center shadow-lg transition-all duration-200 ${liked.has(item.id)
+                                    className={`absolute top-3 right-3 w-9 h-9 rounded-full flex items-center justify-center shadow-lg transition-all duration-300 magnetic ${liked.has(item.id)
                                         ? "bg-red-500 text-white scale-110"
                                         : "bg-white/90 text-foreground/60 hover:text-red-500 hover:bg-white"
                                         }`}>
                                     <Heart className={`w-4 h-4 ${liked.has(item.id) ? "fill-current" : ""}`} />
                                 </button>
+                                {/* Bottom price overlay */}
+                                {item.price && (
+                                    <div className="absolute bottom-3 left-3 bg-white/90 dark:bg-black/70 backdrop-blur-xl px-3 py-1.5 rounded-full">
+                                        <span className="text-xs font-bold text-foreground dark:text-white">{item.price}</span>
+                                    </div>
+                                )}
                             </div>
 
                             {/* Content */}
                             <div className="p-4">
-                                <h3 className="font-bold text-foreground text-base leading-tight mb-0.5 truncate">{item.name}</h3>
-                                <p className="text-sm text-foreground/50 mb-3">📍 {item.location}</p>
+                                <h3 className="font-bold text-foreground text-base leading-tight mb-0.5 truncate group-hover:text-accent transition-colors duration-300">{item.name}</h3>
+                                <p className="text-sm text-foreground/40 mb-3">📍 {item.location}</p>
 
                                 {/* Stats row */}
                                 <div className="flex items-center justify-between mb-4">
@@ -212,27 +220,22 @@ export default function TrendingSection({ activeCategory }: TrendingSectionProps
                                         )}
                                     </div>
                                     <div className="flex items-center gap-1">
-                                        <Star className="w-3.5 h-3.5 text-yellow-400 fill-yellow-400" />
+                                        <Star className="w-3.5 h-3.5 text-amber-400 fill-amber-400" />
                                         <span className="text-xs font-bold text-foreground">{item.rating}</span>
                                     </div>
                                 </div>
 
-                                {/* Price + CTA */}
-                                <div className="flex items-center justify-between gap-2">
-                                    {item.price && (
-                                        <span className="text-xs font-semibold text-foreground/60 flex-shrink-0">{item.price}</span>
-                                    )}
-                                    <div className="flex items-center gap-1 ml-auto flex-shrink-0">
-                                        <ShareButton
-                                            title={item.name}
-                                            location={item.location}
-                                            url={`https://wigo.travel/hotel/${encodeURIComponent(item.id)}?name=${encodeURIComponent(item.name)}&location=${encodeURIComponent(item.location)}`}
-                                        />
-                                        <Link href={`/hotel/${encodeURIComponent(item.id)}?name=${encodeURIComponent(item.name)}&location=${encodeURIComponent(item.location)}&img=${encodeURIComponent(item.image)}&price=${encodeURIComponent(item.price || "")}&rating=${item.rating}`}
-                                            className="text-sm font-bold text-accent hover:text-accent/80 flex items-center gap-1 transition-colors px-2">
-                                            Voir →
-                                        </Link>
-                                    </div>
+                                {/* CTA */}
+                                <div className="flex items-center justify-end gap-1">
+                                    <ShareButton
+                                        title={item.name}
+                                        location={item.location}
+                                        url={`https://wigo.travel/hotel/${encodeURIComponent(item.id)}?name=${encodeURIComponent(item.name)}&location=${encodeURIComponent(item.location)}`}
+                                    />
+                                    <Link href={`/hotel/${encodeURIComponent(item.id)}?name=${encodeURIComponent(item.name)}&location=${encodeURIComponent(item.location)}&img=${encodeURIComponent(item.image)}&price=${encodeURIComponent(item.price || "")}&rating=${item.rating}`}
+                                        className="text-sm font-bold text-accent hover:text-accent/80 flex items-center gap-1 transition-colors px-2 hover-underline">
+                                        Voir →
+                                    </Link>
                                 </div>
                             </div>
                         </article>

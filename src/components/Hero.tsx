@@ -292,12 +292,26 @@ export default function Hero() {
   return (
     <div className="relative min-h-screen flex flex-col items-center justify-center overflow-hidden">
       {/* Background */}
-      <div className="absolute inset-0">
-        <div className="absolute inset-0 bg-gradient-to-br from-slate-950 via-[#0F1E17] to-[#1A0A05]" />
-        {/* Accent glow */}
-        <div className="absolute top-1/4 left-1/3 w-[700px] h-[500px] bg-accent/15 rounded-full blur-[120px] -translate-x-1/2" />
-        <div className="absolute bottom-1/4 right-1/4 w-[500px] h-[400px] bg-forest/20 rounded-full blur-[100px]" />
-        <div className="absolute top-3/4 left-1/4 w-[300px] h-[300px] bg-accent/10 rounded-full blur-[80px]" />
+      <div className="absolute inset-0 noise-overlay">
+        <div className="absolute inset-0 bg-gradient-to-br from-[#050508] via-[#0A1510] to-[#120808]" />
+        {/* Animated 3D orbs */}
+        <div className="orb orb-accent w-[600px] h-[500px] top-[10%] left-[20%]" style={{ animationDelay: '0s' }} />
+        <div className="orb orb-forest w-[500px] h-[400px] bottom-[15%] right-[15%]" style={{ animationDelay: '-4s' }} />
+        <div className="orb orb-accent w-[300px] h-[300px] top-[60%] left-[10%]" style={{ animationDelay: '-8s', opacity: 0.2 }} />
+        <div className="orb orb-gold w-[200px] h-[200px] top-[20%] right-[25%]" style={{ animationDelay: '-6s', opacity: 0.15 }} />
+        {/* Orbital ring */}
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] rounded-full border border-white/[0.03]">
+          <div className="animate-orbit">
+            <div className="w-2 h-2 rounded-full bg-accent/50 blur-[2px]" />
+          </div>
+        </div>
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[700px] rounded-full border border-white/[0.02]">
+          <div className="animate-orbit" style={{ animationDuration: '30s', animationDirection: 'reverse' }}>
+            <div className="w-1.5 h-1.5 rounded-full bg-forest-light/40 blur-[1px]" />
+          </div>
+        </div>
+        {/* Grid pattern */}
+        <div className="absolute inset-0 opacity-[0.02]" style={{ backgroundImage: 'linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px)', backgroundSize: '60px 60px' }} />
       </div>
 
       {/* Particles */}
@@ -306,9 +320,12 @@ export default function Hero() {
       {/* Content */}
       <div className="relative z-10 w-full max-w-5xl mx-auto px-4 text-center pt-20 pb-12">
         {/* Badge */}
-        <div className="inline-flex items-center gap-2 bg-white/8 border border-white/12 text-white/80 text-xs font-semibold px-4 py-2 rounded-full mb-8 animate-slide-up backdrop-blur-sm">
-          <span className="w-1.5 h-1.5 rounded-full bg-accent animate-pulse" />
-          Propulsé par Gemini AI · Amadeus · 150 000+ options en Europe
+        <div className="inline-flex items-center gap-2.5 bg-white/[0.06] border border-white/[0.08] text-white/80 text-xs font-semibold px-5 py-2.5 rounded-full mb-8 animate-slide-up backdrop-blur-xl glow-accent-subtle">
+          <span className="relative flex h-2 w-2">
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-accent opacity-75" />
+            <span className="relative inline-flex rounded-full h-2 w-2 bg-accent" />
+          </span>
+          Propulsé par Gemini AI · Amadeus Production · 150 000+ options
         </div>
 
         {/* Headline */}
@@ -316,7 +333,7 @@ export default function Hero() {
           <h1 className="font-display text-5xl md:text-7xl lg:text-[82px] font-extrabold text-white leading-[1.05] tracking-tight mb-4">
             {headline.line1}
             <br />
-            <span className="gradient-text">{headline.line2}</span>
+            <span className="gradient-text text-glow">{headline.line2}</span>
           </h1>
         </div>
 
@@ -337,7 +354,7 @@ export default function Hero() {
         <div className="w-full max-w-3xl mx-auto animate-slide-up delay-300">
           <form
             onSubmit={(e) => handleSearch(e)}
-            className="relative flex items-center bg-white/10 backdrop-blur-2xl border border-white/18 rounded-2xl p-2 shadow-2xl shadow-black/30"
+            className="relative flex items-center bg-white/[0.07] backdrop-blur-2xl border border-white/[0.12] rounded-2xl p-2 shadow-2xl shadow-black/40 transition-all duration-500 focus-within:border-accent/30 focus-within:shadow-accent/10 focus-within:shadow-[0_0_60px_-15px_rgba(232,101,42,0.3)]"
           >
             <div className="flex items-center flex-grow px-3 gap-3">
               {isSearching ? (
@@ -384,16 +401,18 @@ export default function Hero() {
         </div>
 
         {/* Stats */}
-        <div className="flex flex-wrap items-center justify-center gap-8 mt-16 animate-slide-up delay-400">
+        <div className="flex flex-wrap items-center justify-center gap-10 mt-16 animate-slide-up delay-400">
           {[
-            ["150 000+", "Hébergements"],
-            ["500+", "Compagnies aériennes"],
-            ["50 000+", "Activités"],
-            ["IA", "Gemini 2.0"],
-          ].map(([val, label]) => (
-            <div key={label} className="text-center">
-              <div className="font-display text-2xl font-bold text-white">{val}</div>
-              <div className="text-xs text-white/40 mt-0.5">{label}</div>
+            ["150 000+", "Hébergements", "🏨"],
+            ["500+", "Compagnies aériennes", "✈️"],
+            ["50 000+", "Activités", "🎯"],
+            ["IA", "Gemini 2.0", "🧠"],
+          ].map(([val, label, emoji]) => (
+            <div key={label} className="text-center group cursor-default">
+              <div className="font-display text-2xl font-bold text-white group-hover:text-accent transition-colors duration-300">
+                <span className="mr-1.5 opacity-60">{emoji}</span>{val}
+              </div>
+              <div className="text-xs text-white/35 mt-1 group-hover:text-white/50 transition-colors">{label}</div>
             </div>
           ))}
         </div>
