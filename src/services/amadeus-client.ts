@@ -1,11 +1,17 @@
 /**
  * Centralized Amadeus Self-Service API Client
  * Handles token management, rate limiting, and base request utilities.
+ * Auto-detects test vs production based on NODE_ENV.
  */
 
 const AMADEUS_CLIENT_ID = process.env.AMADEUS_CLIENT_ID;
 const AMADEUS_CLIENT_SECRET = process.env.AMADEUS_CLIENT_SECRET;
-const AMADEUS_BASE = "https://api.amadeus.com";
+
+// Use test API in development (local credentials), production API on Vercel
+const IS_PRODUCTION = process.env.NODE_ENV === "production";
+const AMADEUS_BASE = IS_PRODUCTION
+  ? "https://api.amadeus.com"
+  : "https://test.api.amadeus.com";
 
 // ─── Token Cache ──────────────────────────────────────────────────────────────
 let cachedToken: string | null = null;
