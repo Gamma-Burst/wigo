@@ -36,7 +36,7 @@ const AIRLINE_COLORS: Record<string, string> = {
   EI: "#00634A", AY: "#0B1560", SK: "#000066", AC: "#F01428",
 };
 
-function AirlineLogo({ code, name }: { code: string; name: string }) {
+function AirlineLogo({ code }: { code: string }) {
   const bg = AIRLINE_COLORS[code] || "#E8652A";
   return (
     <div
@@ -85,7 +85,7 @@ export default function FlightResultCard({ flight, onSelect, isSelected }: Fligh
         {/* Header: airline + price */}
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-3">
-            <AirlineLogo code={flight.airline} name={flight.airlineName} />
+            <AirlineLogo code={flight.airline} />
             <div>
               <div className="font-bold text-foreground text-sm group-hover:text-accent transition-colors">{flight.airlineName}</div>
               <div className="text-xs text-foreground/40">{flight.flightNumber}</div>

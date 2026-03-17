@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { ArrowLeft, Sparkles, SlidersHorizontal, ArrowUpDown, X, Plane, Clock, Luggage, CreditCard, Shield, Check } from "lucide-react";
+import { ArrowLeft, Sparkles, SlidersHorizontal, ArrowUpDown, X, Plane, Clock, Luggage, CreditCard, Shield } from "lucide-react";
 import FlightSearchForm from "@/components/FlightSearchForm";
 import FlightResultCard, { type FlightResult } from "@/components/FlightResultCard";
 
