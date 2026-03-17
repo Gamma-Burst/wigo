@@ -2,62 +2,51 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { ArrowLeft, Sparkles, SlidersHorizontal, ArrowUpDown, X, Plane, Clock, Luggage, CreditCard, Shield } from "lucide-react";
+import { ArrowLeft, Sparkles, SlidersHorizontal, ArrowUpDown, X, Plane, Clock, Luggage, Shield, ExternalLink } from "lucide-react";
 import FlightSearchForm from "@/components/FlightSearchForm";
 import FlightResultCard, { type FlightResult } from "@/components/FlightResultCard";
 
 type SortKey = "price" | "duration" | "stops";
 
+// ─── Airline booking URLs ─────────────────────────────────────────────────────
+const AIRLINE_BOOKING_URLS: Record<string, string> = {
+  TP: "https://www.flytap.com", AF: "https://www.airfrance.fr",
+  BA: "https://www.britishairways.com", LH: "https://www.lufthansa.com",
+  KL: "https://www.klm.fr", SN: "https://www.brusselsairlines.com",
+  VY: "https://www.vueling.com", FR: "https://www.ryanair.com",
+  U2: "https://www.easyjet.com", W6: "https://www.wizzair.com",
+  EW: "https://www.eurowings.com", IB: "https://www.iberia.com",
+  LX: "https://www.swiss.com", OS: "https://www.austrian.com",
+  TK: "https://www.turkishairlines.com", EK: "https://www.emirates.com",
+  QR: "https://www.qatarairways.com", DL: "https://www.delta.com",
+  AA: "https://www.aa.com", UA: "https://www.united.com",
+  AY: "https://www.finnair.com", EI: "https://www.aerlingus.com",
+  SK: "https://www.flysas.com", AC: "https://www.aircanada.com",
+};
+
+function getAirlineUrl(code: string, origin: string, dest: string, date: string): string {
+  const base = AIRLINE_BOOKING_URLS[code];
+  if (base) return base;
+  return `https://www.google.com/travel/flights?q=flights+${origin}+to+${dest}+on+${date}`;
+}
+
 // ─── Flight Detail Drawer ─────────────────────────────────────────────────────
 function FlightDetailDrawer({ flight, onClose }: { flight: FlightResult; onClose: () => void }) {
-  const formatTime = (iso: string) => new Date(iso).toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" });
-  const formatDate = (iso: string) => new Date(iso).toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
-  const cabinLabels: Record<string, string> = { ECONOMY: "Économique", PREMIUM_ECONOMY: "Premium Économique", BUSINESS: "Business", FIRST: "Première classe" };
+  const fmtTime = (iso: string) => new Date(iso).toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" });
+  const fmtDate = (iso: string) => new Date(iso).toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
+  const fmtDateShort = (iso: string) => new Date(iso).toISOString().split("T")[0];
+  const cabinLabel: Record<string, string> = { ECONOMY: "Économique", PREMIUM_ECONOMY: "Premium Éco", BUSINESS: "Business", FIRST: "Première" };
 
-  const [isBooking, setIsBooking] = useState(false);
-  const [bookError, setBookError] = useState("");
-
-  const handleBook = async () => {
-    setIsBooking(true);
-    setBookError("");
-    try {
-      const res = await fetch("/api/flights/book", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          flightNumber: flight.flightNumber,
-          airline: flight.airlineName,
-          origin: flight.origin,
-          destination: flight.destination,
-          departureTime: flight.departureTime,
-          returnTime: flight.returnFlight?.departureTime,
-          price: flight.price,
-          currency: flight.currency,
-          cabin: flight.cabin,
-          passengers: 1,
-        }),
-      });
-      const data = await res.json();
-      if (data.url) {
-        window.location.href = data.url;
-      } else {
-        setBookError(data.error || "Erreur lors de la réservation");
-        setIsBooking(false);
-      }
-    } catch {
-      setBookError("Erreur de connexion. Réessayez.");
-      setIsBooking(false);
-    }
+  const handleBookOnAirline = () => {
+    const url = getAirlineUrl(flight.airline, flight.origin, flight.destination, fmtDateShort(flight.departureTime));
+    window.open(url, "_blank", "noopener,noreferrer");
   };
 
   return (
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center" onClick={onClose}>
-      {/* Backdrop */}
-      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm animate-fade-in" />
-
-      {/* Panel */}
+      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
       <div
-        className="relative bg-white dark:bg-[#141412] w-full sm:max-w-lg sm:rounded-2xl rounded-t-2xl max-h-[90vh] overflow-y-auto animate-slide-up shadow-2xl border border-foreground/[0.06]"
+        className="relative bg-white dark:bg-[#141412] w-full sm:max-w-lg sm:rounded-2xl rounded-t-2xl max-h-[90vh] overflow-y-auto shadow-2xl border border-foreground/[0.06]"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
@@ -66,7 +55,7 @@ function FlightDetailDrawer({ flight, onClose }: { flight: FlightResult; onClose
             <h2 className="font-display text-lg font-bold text-foreground">Détails du vol</h2>
             <p className="text-xs text-foreground/40">{flight.flightNumber} · {flight.airlineName}</p>
           </div>
-          <button onClick={onClose} className="w-9 h-9 rounded-full bg-foreground/5 hover:bg-foreground/10 flex items-center justify-center transition-colors magnetic">
+          <button onClick={onClose} className="w-9 h-9 rounded-full bg-foreground/5 hover:bg-foreground/10 flex items-center justify-center transition-colors">
             <X className="w-5 h-5 text-foreground/60" />
           </button>
         </div>
@@ -76,7 +65,7 @@ function FlightDetailDrawer({ flight, onClose }: { flight: FlightResult; onClose
           <div className="flex items-center justify-between">
             <div>
               <div className="text-3xl font-black">{flight.price}€</div>
-              <div className="text-white/70 text-sm">par personne · {cabinLabels[flight.cabin] || flight.cabin}</div>
+              <div className="text-white/70 text-sm">par personne · {cabinLabel[flight.cabin] || flight.cabin}</div>
             </div>
             <div className="text-right">
               <div className="text-sm font-semibold">{flight.origin} → {flight.destination}</div>
@@ -85,15 +74,13 @@ function FlightDetailDrawer({ flight, onClose }: { flight: FlightResult; onClose
           </div>
         </div>
 
-        {/* Outbound itinerary */}
+        {/* Outbound */}
         <div className="p-5">
           <h3 className="text-sm font-bold text-foreground/60 uppercase tracking-wider mb-4 flex items-center gap-2">
-            <Plane className="w-4 h-4 text-accent" /> Vol aller — {formatDate(flight.departureTime)}
+            <Plane className="w-4 h-4 text-accent" /> Vol aller — {fmtDate(flight.departureTime)}
           </h3>
-
           <div className="flex items-start gap-4">
-            {/* Timeline */}
-            <div className="flex flex-col items-center gap-0 min-w-[20px]">
+            <div className="flex flex-col items-center min-w-[20px]">
               <div className="w-3 h-3 rounded-full bg-accent border-2 border-white dark:border-[#141412] shadow" />
               <div className="w-0.5 flex-grow bg-accent/20 min-h-[60px]" />
               {flight.stops > 0 && (
@@ -104,37 +91,27 @@ function FlightDetailDrawer({ flight, onClose }: { flight: FlightResult; onClose
               )}
               <div className="w-3 h-3 rounded-full bg-emerald-500 border-2 border-white dark:border-[#141412] shadow" />
             </div>
-
             <div className="flex-grow space-y-6">
-              {/* Departure */}
               <div>
                 <div className="flex items-center gap-2">
-                  <span className="text-xl font-black text-foreground">{formatTime(flight.departureTime)}</span>
-                  <span className="tag-pill">{flight.origin}</span>
+                  <span className="text-xl font-black text-foreground">{fmtTime(flight.departureTime)}</span>
+                  <span className="bg-foreground/5 text-foreground/70 text-xs font-semibold px-2 py-0.5 rounded-full">{flight.origin}</span>
                 </div>
                 <p className="text-xs text-foreground/40 mt-0.5">Départ</p>
               </div>
-
-              {/* Stop info */}
               {flight.stops > 0 && (
                 <div className="bg-amber-50 dark:bg-amber-900/10 border border-amber-200/30 dark:border-amber-800/20 rounded-xl px-4 py-3">
-                  <p className="text-xs font-semibold text-amber-600 dark:text-amber-400">
-                    Escale à {flight.stopCities.join(", ") || "—"}
-                  </p>
+                  <p className="text-xs font-semibold text-amber-600 dark:text-amber-400">Escale à {flight.stopCities.join(", ") || "—"}</p>
                 </div>
               )}
-
-              {/* Arrival */}
               <div>
                 <div className="flex items-center gap-2">
-                  <span className="text-xl font-black text-foreground">{formatTime(flight.arrivalTime)}</span>
-                  <span className="tag-pill">{flight.destination}</span>
+                  <span className="text-xl font-black text-foreground">{fmtTime(flight.arrivalTime)}</span>
+                  <span className="bg-foreground/5 text-foreground/70 text-xs font-semibold px-2 py-0.5 rounded-full">{flight.destination}</span>
                 </div>
                 <p className="text-xs text-foreground/40 mt-0.5">Arrivée</p>
               </div>
             </div>
-
-            {/* Duration side */}
             <div className="text-right">
               <div className="flex items-center gap-1 text-sm text-foreground/60">
                 <Clock className="w-4 h-4" /> {flight.duration}
@@ -142,22 +119,22 @@ function FlightDetailDrawer({ flight, onClose }: { flight: FlightResult; onClose
             </div>
           </div>
 
-          {/* Return itinerary */}
+          {/* Return */}
           {flight.returnFlight && (
             <div className="mt-6 pt-6 border-t border-foreground/[0.06]">
               <h3 className="text-sm font-bold text-foreground/60 uppercase tracking-wider mb-4 flex items-center gap-2">
-                <Plane className="w-4 h-4 text-forest -scale-x-100" /> Vol retour — {formatDate(flight.returnFlight.departureTime)}
+                <Plane className="w-4 h-4 text-forest -scale-x-100" /> Vol retour — {fmtDate(flight.returnFlight.departureTime)}
               </h3>
               <div className="flex items-center justify-between bg-foreground/[0.03] rounded-xl p-4">
                 <div>
-                  <span className="text-lg font-bold text-foreground">{formatTime(flight.returnFlight.departureTime)}</span>
+                  <span className="text-lg font-bold text-foreground">{fmtTime(flight.returnFlight.departureTime)}</span>
                   <span className="text-foreground/40 text-sm ml-2">{flight.destination}</span>
                 </div>
                 <div className="flex items-center gap-1 text-sm text-foreground/50">
                   <Clock className="w-3.5 h-3.5" /> {flight.returnFlight.duration}
                 </div>
                 <div>
-                  <span className="text-lg font-bold text-foreground">{formatTime(flight.returnFlight.arrivalTime)}</span>
+                  <span className="text-lg font-bold text-foreground">{fmtTime(flight.returnFlight.arrivalTime)}</span>
                   <span className="text-foreground/40 text-sm ml-2">{flight.origin}</span>
                 </div>
               </div>
@@ -179,32 +156,17 @@ function FlightDetailDrawer({ flight, onClose }: { flight: FlightResult; onClose
           </div>
         </div>
 
-        {/* CTA */}
+        {/* CTA → Redirect to airline */}
         <div className="sticky bottom-0 p-5 bg-white/95 dark:bg-[#141412]/95 backdrop-blur-xl border-t border-foreground/[0.06]">
-          {bookError && (
-            <div className="mb-3 p-3 bg-red-50 dark:bg-red-900/10 border border-red-200/30 dark:border-red-800/20 rounded-xl">
-              <p className="text-xs font-semibold text-red-600 dark:text-red-400">{bookError}</p>
-            </div>
-          )}
           <button
-            onClick={handleBook}
-            disabled={isBooking}
-            className="w-full btn-accent py-4 rounded-xl text-base flex items-center justify-center gap-2 disabled:opacity-60"
+            onClick={handleBookOnAirline}
+            className="w-full btn-accent py-4 rounded-xl text-base flex items-center justify-center gap-2"
           >
-            {isBooking ? (
-              <>
-                <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                Redirection vers le paiement...
-              </>
-            ) : (
-              <>
-                <CreditCard className="w-5 h-5" />
-                Réserver pour {flight.price}€
-              </>
-            )}
+            <ExternalLink className="w-5 h-5" />
+            Réserver sur {flight.airlineName}
           </button>
           <p className="text-center text-xs text-foreground/30 mt-2">
-            Paiement sécurisé via Stripe · Vous serez redirigé
+            Vous serez redirigé vers le site officiel de {flight.airlineName}
           </p>
         </div>
       </div>
@@ -250,7 +212,6 @@ export default function VolsPage() {
     }
   };
 
-  // Sort & filter
   const sortedResults = results ? [...results]
     .filter(f => filterStops === null || f.stops === filterStops)
     .sort((a, b) => {
@@ -265,21 +226,19 @@ export default function VolsPage() {
   return (
     <div className="min-h-screen relative overflow-hidden">
       {/* Hero background */}
-      <div className="absolute inset-0 noise-overlay">
+      <div className="absolute inset-0">
         <div className="absolute inset-0 bg-gradient-to-br from-[#050508] via-[#0A1510] to-[#120808]" />
-        <div className="orb orb-accent w-[600px] h-[500px] top-[10%] left-[20%]" />
-        <div className="orb orb-forest w-[400px] h-[300px] bottom-[20%] right-[20%]" style={{ animationDelay: "-4s" }} />
-        <div className="absolute inset-0 opacity-[0.02]" style={{ backgroundImage: 'linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px)', backgroundSize: '60px 60px' }} />
+        <div className="absolute top-[10%] left-[20%] w-[600px] h-[500px] bg-accent/8 rounded-full blur-[120px]" />
+        <div className="absolute bottom-[20%] right-[20%] w-[400px] h-[300px] bg-forest/12 rounded-full blur-[100px]" />
       </div>
 
       <div className="relative z-10 pt-24 pb-16 px-4">
-        {/* Back + title */}
         <div className="max-w-5xl mx-auto mb-8">
           <Link href="/" className="inline-flex items-center gap-2 text-white/60 hover:text-white text-sm transition-colors mb-6">
             <ArrowLeft className="w-4 h-4" /> Retour à l&apos;accueil
           </Link>
           <div className="text-center">
-            <div className="inline-flex items-center gap-2.5 bg-white/[0.06] border border-white/[0.08] text-white/80 text-xs font-semibold px-5 py-2.5 rounded-full mb-6 backdrop-blur-xl glow-accent-subtle">
+            <div className="inline-flex items-center gap-2.5 bg-white/[0.06] border border-white/[0.08] text-white/80 text-xs font-semibold px-5 py-2.5 rounded-full mb-6 backdrop-blur-xl">
               <span className="relative flex h-2 w-2">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-accent opacity-75" />
                 <span className="relative inline-flex rounded-full h-2 w-2 bg-accent" />
@@ -287,14 +246,12 @@ export default function VolsPage() {
               Amadeus Production · Prix en temps réel
             </div>
             <h1 className="font-display text-4xl md:text-6xl font-extrabold text-white leading-tight mb-3">
-              Trouvez le vol <span className="gradient-text text-glow">parfait</span>
+              Trouvez le vol <span className="gradient-text">parfait</span>
             </h1>
             <p className="text-white/45 text-lg max-w-xl mx-auto mb-10">
-              Comparez les prix de toutes les compagnies aériennes en un instant.
+              Comparez les prix et réservez directement sur le site de la compagnie.
             </p>
           </div>
-
-          {/* Search form */}
           <FlightSearchForm onSearch={handleSearch} isSearching={isSearching} />
         </div>
       </div>
@@ -320,7 +277,6 @@ export default function VolsPage() {
               </div>
             ) : sortedResults && (
               <>
-                {/* Results header */}
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
                   <div>
                     <h2 className="text-xl font-bold text-foreground flex items-center gap-2">
@@ -334,7 +290,6 @@ export default function VolsPage() {
                   </div>
 
                   <div className="flex items-center gap-2">
-                    {/* Sort */}
                     <div className="flex items-center gap-1 bg-foreground/5 rounded-xl p-1">
                       <ArrowUpDown className="w-3.5 h-3.5 text-foreground/40 ml-2" />
                       {([["price", "Prix"], ["duration", "Durée"], ["stops", "Escales"]] as [SortKey, string][]).map(([key, label]) => (
@@ -344,8 +299,6 @@ export default function VolsPage() {
                         </button>
                       ))}
                     </div>
-
-                    {/* Filter stops */}
                     <div className="flex items-center gap-1 bg-foreground/5 rounded-xl p-1">
                       <SlidersHorizontal className="w-3.5 h-3.5 text-foreground/40 ml-2" />
                       {([[null, "Tous"], [0, "Direct"], [1, "1 esc."]] as [number | null, string][]).map(([val, label]) => (
@@ -358,8 +311,7 @@ export default function VolsPage() {
                   </div>
                 </div>
 
-                {/* Flight cards */}
-                <div className="space-y-4 stagger-children">
+                <div className="space-y-4">
                   {sortedResults.map((flight) => (
                     <FlightResultCard
                       key={flight.id}
