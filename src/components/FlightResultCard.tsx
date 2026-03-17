@@ -1,6 +1,6 @@
 "use client";
 
-import { Plane, Clock, ArrowRight, Luggage, ExternalLink } from "lucide-react";
+import { Plane, Clock, Luggage, ExternalLink } from "lucide-react";
 
 export interface FlightResult {
   id: string;
@@ -26,10 +26,8 @@ export interface FlightResult {
   };
 }
 
-// Remplace par ton vrai Marker Travelpayouts (celui de ton script était 508965)
 const TRAVELPAYOUTS_MARKER = "508965";
 
-// ─── Airline logo colors (fallback) ────────────────────────────
 const AIRLINE_COLORS: Record<string, string> = {
   AF: "#002157", BA: "#1B3D6D", LH: "#05164D", KL: "#00A1DE",
   SN: "#003B5C", VY: "#FFD100", FR: "#073590", U2: "#FF6600",
@@ -75,14 +73,10 @@ export default function FlightResultCard({ flight, onSelect, isSelected }: Fligh
   const stopsLabel = flight.stops === 0 ? "Direct" : `${flight.stops} escale${flight.stops > 1 ? "s" : ""}`;
   const stopsColor = flight.stops === 0 ? "text-emerald-500" : flight.stops === 1 ? "text-amber-500" : "text-red-400";
 
-  // Génération du lien d'affiliation Aviasales (Deep Link)
   const getAffiliateLink = () => {
-    const dateAller = flight.departureTime.split("T")[0]; // Format YYYY-MM-DD
-
-    // On construit l'URL avec les codes IATA (ex: PAR, MAD) et ton Marker
+    const dateAller = flight.departureTime.split("T")[0];
     const baseUrl = `https://search.aviasales.com/flights/`;
     const params = `?origin=${flight.origin}&destination=${flight.destination}&depart_date=${dateAller}&marker=${TRAVELPAYOUTS_MARKER}`;
-
     return baseUrl + params;
   };
 
@@ -95,7 +89,6 @@ export default function FlightResultCard({ flight, onSelect, isSelected }: Fligh
         }`}
     >
       <div className="p-5">
-        {/* Header: airline + price */}
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-3">
             <AirlineLogo code={flight.airline} />
@@ -110,7 +103,6 @@ export default function FlightResultCard({ flight, onSelect, isSelected }: Fligh
           </div>
         </div>
 
-        {/* Outbound */}
         <div className="flex items-center gap-4 mb-3">
           <div className="text-center min-w-[60px]">
             <div className="text-lg font-bold text-foreground">{formatFlightTime(flight.departureTime)}</div>
@@ -140,7 +132,6 @@ export default function FlightResultCard({ flight, onSelect, isSelected }: Fligh
           </div>
         </div>
 
-        {/* Return flight */}
         {flight.returnFlight && (
           <div className="flex items-center gap-4 mb-3 pt-3 border-t border-foreground/[0.06]">
             <div className="text-center min-w-[60px]">
@@ -168,7 +159,6 @@ export default function FlightResultCard({ flight, onSelect, isSelected }: Fligh
           </div>
         )}
 
-        {/* Footer */}
         <div className="flex items-center justify-between pt-3 border-t border-foreground/[0.06]">
           <div className="flex items-center gap-3 text-xs text-foreground/50">
             <span className="tag-pill">
@@ -181,15 +171,14 @@ export default function FlightResultCard({ flight, onSelect, isSelected }: Fligh
             <span>{formatFlightDate(flight.departureTime)}</span>
           </div>
 
-          {/* BOUTON DE REDIRECTION AFFILIÉ */}
           <a
             href={getAffiliateLink()}
             target="_blank"
             rel="noopener noreferrer"
-            onClick={(e) => e.stopPropagation()} // Empêche la sélection de la carte quand on clique sur le lien
+            onClick={(e) => e.stopPropagation()}
             className="flex items-center gap-1.5 px-5 py-2.5 rounded-xl font-bold text-sm bg-accent text-white hover:bg-accent/90 shadow-lg shadow-accent/20 transition-all duration-300"
           >
-            Voir l'offre <ExternalLink className="w-4 h-4" />
+            Voir l&apos;offre <ExternalLink className="w-4 h-4" />
           </a>
         </div>
       </div>
