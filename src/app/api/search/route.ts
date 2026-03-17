@@ -1,24 +1,24 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { extractFilters } from '@/services/ai-filters';
+import { extractFilters, SearchFilters } from '@/services/ai-filters';
 import { searchHotels } from '@/services/hotel-provider';
 
 /**
  * PRODUCTION-READY SEARCH ORCHESTRATOR
- * Route API pour gérer la recherche d'hôtels via requêtes HTTP POST.
+ * Version corrigée : Typage strict SearchFilters et conformité ESLint Vercel.
  */
 export async function POST(req: NextRequest) {
     try {
-        // 1. Lecture sécurisée du body (évite le crash si la requête est mal formatée)
+        // 1. Lecture sécurisée du body (plus de variable 'e' inutilisée)
         let body;
         try {
             body = await req.json();
-        } catch (e) {
+        } catch {
             return NextResponse.json({ error: "Format JSON invalide ou body manquant." }, { status: 400 });
         }
 
         const { query } = body as { query?: string };
 
-        // 2. Vérification que la recherche existe bien
+        // 2. Vérification de la requête
         if (!query || typeof query !== 'string') {
             return NextResponse.json({ error: "Requête de recherche manquante ou invalide." }, { status: 400 });
         }
@@ -26,13 +26,13 @@ export async function POST(req: NextRequest) {
         // 3. Extraction des filtres avec l'IA
         const filters = await extractFilters(query);
 
-        // Initialisation sécurisée pour TypeScript
-        let searchParams: Record<string, any> = filters || {};
+        // 4. Utilisation du type exact SearchFilters au lieu de Record ou any
+        let searchParams: SearchFilters;
 
-        // 4. Fallback si l'IA échoue (ex: timeout, quota dépassé)
         if (!filters) {
             console.warn("[SEARCH_API] AI Filtering failed, falling back to regex extraction.");
 
+            // Regex améliorée pour extraire la destination
             const fallbackLocation = query.match(/(?:à|en|in|to)\s+([A-ZÀ-ÖØ-öø-ÿ][A-Za-zÀ-ÖØ-öø-ÿ\s]+)/i)?.[1]?.trim() || "Europe";
 
             searchParams = {
@@ -40,12 +40,14 @@ export async function POST(req: NextRequest) {
                 guests: 2,
                 amenities: []
             };
+        } else {
+            searchParams = filters;
         }
 
-        // 5. Recherche des hôtels avec le fournisseur (Amadeus / Travelpayouts)
-        const hotels = await searchHotels(searchParams as any);
+        // 5. Recherche des hôtels avec le type correct (plus de 'as any')
+        const hotels = await searchHotels(searchParams);
 
-        // 6. Retourne toujours un tableau, même vide, pour éviter les erreurs React (.map is not a function)
+        // 6. Retourne toujours un tableau, même vide
         return NextResponse.json({ results: hotels || [] });
 
     } catch (error: unknown) {

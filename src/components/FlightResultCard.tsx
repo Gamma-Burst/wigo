@@ -1,6 +1,6 @@
 "use client";
 
-import { Plane, Clock, ArrowRight, Luggage, Check } from "lucide-react";
+import { Plane, Clock, ArrowRight, Luggage, ExternalLink } from "lucide-react";
 
 export interface FlightResult {
   id: string;
@@ -26,7 +26,10 @@ export interface FlightResult {
   };
 }
 
-// ─── Airline logo colors (used as fallback avatar) ────────────────────────────
+// Remplace par ton vrai Marker Travelpayouts (celui de ton script était 508965)
+const TRAVELPAYOUTS_MARKER = "508965";
+
+// ─── Airline logo colors (fallback) ────────────────────────────
 const AIRLINE_COLORS: Record<string, string> = {
   AF: "#002157", BA: "#1B3D6D", LH: "#05164D", KL: "#00A1DE",
   SN: "#003B5C", VY: "#FFD100", FR: "#073590", U2: "#FF6600",
@@ -72,14 +75,24 @@ export default function FlightResultCard({ flight, onSelect, isSelected }: Fligh
   const stopsLabel = flight.stops === 0 ? "Direct" : `${flight.stops} escale${flight.stops > 1 ? "s" : ""}`;
   const stopsColor = flight.stops === 0 ? "text-emerald-500" : flight.stops === 1 ? "text-amber-500" : "text-red-400";
 
+  // Génération du lien d'affiliation Aviasales (Deep Link)
+  const getAffiliateLink = () => {
+    const dateAller = flight.departureTime.split("T")[0]; // Format YYYY-MM-DD
+
+    // On construit l'URL avec les codes IATA (ex: PAR, MAD) et ton Marker
+    const baseUrl = `https://search.aviasales.com/flights/`;
+    const params = `?origin=${flight.origin}&destination=${flight.destination}&depart_date=${dateAller}&marker=${TRAVELPAYOUTS_MARKER}`;
+
+    return baseUrl + params;
+  };
+
   return (
     <div
       onClick={onSelect}
-      className={`group bg-white dark:bg-[#141412] rounded-2xl overflow-hidden transition-all duration-400 cursor-pointer card-3d-subtle border ${
-        isSelected
+      className={`group bg-white dark:bg-[#141412] rounded-2xl overflow-hidden transition-all duration-400 cursor-pointer card-3d-subtle border ${isSelected
           ? "border-accent/50 shadow-[0_0_30px_-5px_rgba(232,101,42,0.3)] scale-[1.01]"
           : "border-foreground/[0.06] hover:border-accent/20"
-      }`}
+        }`}
     >
       <div className="p-5">
         {/* Header: airline + price */}
@@ -132,7 +145,7 @@ export default function FlightResultCard({ flight, onSelect, isSelected }: Fligh
           <div className="flex items-center gap-4 mb-3 pt-3 border-t border-foreground/[0.06]">
             <div className="text-center min-w-[60px]">
               <div className="text-lg font-bold text-foreground">{formatFlightTime(flight.returnFlight.departureTime)}</div>
-              <div className="text-xs font-semibold text-forest">{flight.destination}</div>
+              <div className="text-xs font-semibold text-accent">{flight.destination}</div>
             </div>
             <div className="flex-grow flex flex-col items-center gap-1">
               <div className="flex items-center gap-1 text-xs text-foreground/50">
@@ -150,7 +163,7 @@ export default function FlightResultCard({ flight, onSelect, isSelected }: Fligh
             </div>
             <div className="text-center min-w-[60px]">
               <div className="text-lg font-bold text-foreground">{formatFlightTime(flight.returnFlight.arrivalTime)}</div>
-              <div className="text-xs font-semibold text-forest">{flight.origin}</div>
+              <div className="text-xs font-semibold text-accent">{flight.origin}</div>
             </div>
           </div>
         )}
@@ -167,20 +180,17 @@ export default function FlightResultCard({ flight, onSelect, isSelected }: Fligh
             </span>
             <span>{formatFlightDate(flight.departureTime)}</span>
           </div>
-          <button
-            onClick={(e) => { e.stopPropagation(); onSelect?.(); }}
-            className={`flex items-center gap-1.5 px-5 py-2.5 rounded-xl font-bold text-sm transition-all duration-300 ${
-              isSelected
-                ? "bg-emerald-500 text-white shadow-lg shadow-emerald-500/30"
-                : "btn-accent"
-            }`}
+
+          {/* BOUTON DE REDIRECTION AFFILIÉ */}
+          <a
+            href={getAffiliateLink()}
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={(e) => e.stopPropagation()} // Empêche la sélection de la carte quand on clique sur le lien
+            className="flex items-center gap-1.5 px-5 py-2.5 rounded-xl font-bold text-sm bg-accent text-white hover:bg-accent/90 shadow-lg shadow-accent/20 transition-all duration-300"
           >
-            {isSelected ? (
-              <><Check className="w-4 h-4" /> Sélectionné</>
-            ) : (
-              <>Sélectionner <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" /></>
-            )}
-          </button>
+            Voir l'offre <ExternalLink className="w-4 h-4" />
+          </a>
         </div>
       </div>
     </div>
