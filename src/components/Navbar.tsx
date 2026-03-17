@@ -4,7 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { useState, useEffect } from "react";
 import { SignInButton, SignedIn, SignedOut, UserButton } from "@clerk/nextjs";
-import { Compass, History, Zap, Menu, X } from "lucide-react";
+import { Compass, History, Zap, Plane, Menu, X } from "lucide-react";
 
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
@@ -42,6 +42,7 @@ export default function Navbar() {
             {/* Desktop nav */}
             <div className="hidden md:flex items-center gap-1">
               <NavLink href="/" icon={<Compass className="w-4 h-4" />} label="Explorer" scrolled={scrolled} />
+              <NavLink href="/vols" icon={<Plane className="w-4 h-4" />} label="Vols" scrolled={scrolled} />
               <NavLink href="/historique" icon={<History className="w-4 h-4" />} label="Mes voyages" scrolled={scrolled} />
               <NavLink href="/pricing" icon={<Zap className="w-4 h-4" />} label="Pro" accent scrolled={scrolled} />
             </div>
@@ -92,6 +93,7 @@ export default function Navbar() {
             onClick={(e) => e.stopPropagation()}
           >
             <MobileNavLink href="/" icon={<Compass className="w-5 h-5" />} label="Explorer" onClick={() => setMobileOpen(false)} />
+            <MobileNavLink href="/vols" icon={<Plane className="w-5 h-5" />} label="Vols" onClick={() => setMobileOpen(false)} />
             <MobileNavLink href="/historique" icon={<History className="w-5 h-5" />} label="Mes voyages" onClick={() => setMobileOpen(false)} />
             <MobileNavLink href="/pricing" icon={<Zap className="w-5 h-5" />} label="WIGO Pro" onClick={() => setMobileOpen(false)} accent />
             <div className="pt-2 border-t border-black/8 mt-2">

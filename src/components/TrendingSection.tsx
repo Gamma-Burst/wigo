@@ -85,10 +85,19 @@ const TRENDING_DATA: Record<CategoryId, TrendingItem[]> = {
         { id: "m5", name: "Brocante Nationale d'Ath", location: "Ath, Hainaut", image: "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800&q=80", rating: 4.5, likes: 1543, bookings: 0, tag: "Trésors cachés", price: "Entrée libre" },
         { id: "m6", name: "Marché Artisanal de Durbuy", location: "Durbuy, Luxembourg", image: "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=800&q=80", rating: 4.8, likes: 2345, bookings: 0, tag: "Artisans locaux", price: "Entrée libre" },
     ],
+    flights: [
+        { id: "f1", name: "Bruxelles → Barcelone", location: "Brussels Airlines · Direct", image: "https://images.unsplash.com/photo-1583394838336-acd977736f90?w=800&q=80", rating: 4.8, likes: 12340, bookings: 8765, tag: "🔥 Populaire", price: "À partir de 49€", slug: "/vols" },
+        { id: "f2", name: "Bruxelles → Rome", location: "Ryanair · Direct", image: "https://images.unsplash.com/photo-1552832230-c0197dd311b5?w=800&q=80", rating: 4.7, likes: 9876, bookings: 6543, tag: "Culture", price: "À partir de 29€", slug: "/vols" },
+        { id: "f3", name: "Bruxelles → Lisbonne", location: "TAP Portugal · Direct", image: "https://images.unsplash.com/photo-1585208798174-6cedd86e019a?w=800&q=80", rating: 4.9, likes: 7654, bookings: 5432, tag: "Soleil", price: "À partir de 59€", slug: "/vols" },
+        { id: "f4", name: "Paris → Marrakech", location: "Air France · Direct", image: "https://images.unsplash.com/photo-1597212618440-806262de4f6b?w=800&q=80", rating: 4.6, likes: 11234, bookings: 9876, tag: "Exotique", price: "À partir de 89€", slug: "/vols" },
+        { id: "f5", name: "Bruxelles → Londres", location: "easyJet · Direct", image: "https://images.unsplash.com/photo-1513635269975-59663e0ac1ad?w=800&q=80", rating: 4.5, likes: 15678, bookings: 12345, tag: "Weekend", price: "À partir de 35€", slug: "/vols" },
+        { id: "f6", name: "Paris → Dubai", location: "Emirates · Direct", image: "https://images.unsplash.com/photo-1512453979798-5ea266f8880c?w=800&q=80", rating: 4.9, likes: 8765, bookings: 4321, tag: "Luxe ✨", price: "À partir de 299€", slug: "/vols" },
+    ],
 };
 
 const SECTION_TITLES: Record<CategoryId, string> = {
     hotels: "Les hôtels les plus réservés",
+    flights: "Les vols les plus recherchés",
     hiking: "Les sentiers les plus parcourus",
     events: "Les événements les plus attendus",
     restaurants: "Les tables les plus appréciées",

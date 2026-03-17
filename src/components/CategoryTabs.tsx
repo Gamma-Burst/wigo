@@ -1,6 +1,6 @@
 "use client";
 
-export type CategoryId = "hotels" | "hiking" | "events" | "restaurants" | "culture" | "attractions" | "nature" | "markets";
+export type CategoryId = "hotels" | "flights" | "hiking" | "events" | "restaurants" | "culture" | "attractions" | "nature" | "markets";
 
 export interface Category {
     id: CategoryId;
@@ -11,6 +11,7 @@ export interface Category {
 
 export const CATEGORIES: Category[] = [
     { id: "hotels", label: "Hôtels", emoji: "🏨", placeholder: "Hotel spa à Bruxelles 2 personnes..." },
+    { id: "flights", label: "Vols", emoji: "✈️", placeholder: "Vol Paris Barcelone pas cher..." },
     { id: "hiking", label: "Randos", emoji: "🥾", placeholder: "Sentier facile en famille près de Liège..." },
     { id: "events", label: "Événements", emoji: "🎪", placeholder: "Fête médiévale en Belgique ce weekend..." },
     { id: "restaurants", label: "Restaurants", emoji: "🍽", placeholder: "Gastronomie locale à Namur..." },

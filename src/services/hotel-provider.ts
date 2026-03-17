@@ -1,9 +1,11 @@
+/**
+ * Hotel Provider — Enhanced Amadeus Hotel APIs
+ * Hotel List, Hotel Search (offers), Hotel Ratings, Hotel Booking.
+ */
+
 import { HotelResult } from "@/components/SearchResultCard";
 import { SearchFilters } from "./ai-filters";
-
-const AMADEUS_CLIENT_ID = process.env.AMADEUS_CLIENT_ID;
-const AMADEUS_CLIENT_SECRET = process.env.AMADEUS_CLIENT_SECRET;
-const AMADEUS_BASE = "https://api.amadeus.com";
+import { amadeusGet, amadeusPost, getDefaultCheckIn, getDefaultCheckOut } from "./amadeus-client";
 
 const IMAGES = [
   "https://images.unsplash.com/photo-1542718610-a1d656d1884c?w=800&q=80",
@@ -14,70 +16,40 @@ const IMAGES = [
   "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800&q=80",
   "https://images.unsplash.com/photo-1590490360182-c33d57733427?w=800&q=80",
   "https://images.unsplash.com/photo-1518780664697-55e3ad937233?w=800&q=80",
+  "https://images.unsplash.com/photo-1455587734955-081b22074882?w=800&q=80",
+  "https://images.unsplash.com/photo-1631049307264-da0ec9d70304?w=800&q=80",
 ];
 
-// ─── Token cache ──────────────────────────────────────────────────────────────
-let cachedToken: string | null = null;
-let tokenExpiry = 0;
-
-async function getAmadeusToken(): Promise<string | null> {
-  if (!AMADEUS_CLIENT_ID || !AMADEUS_CLIENT_SECRET) return null;
-  if (cachedToken && Date.now() < tokenExpiry) return cachedToken;
-  try {
-    const res = await fetch(`${AMADEUS_BASE}/v1/security/oauth2/token`, {
-      method: "POST",
-      headers: { "Content-Type": "application/x-www-form-urlencoded" },
-      body: `grant_type=client_credentials&client_id=${AMADEUS_CLIENT_ID}&client_secret=${AMADEUS_CLIENT_SECRET}`,
-    });
-    const data = await res.json();
-    if (data.access_token) {
-      cachedToken = data.access_token;
-      tokenExpiry = Date.now() + (data.expires_in - 60) * 1000;
-      return cachedToken;
-    }
-    return null;
-  } catch (e) {
-    console.error("Amadeus token error:", e);
-    return null;
-  }
-}
-
-// ─── IATA city codes (pour Hotel List API) ────────────────────────────────────
-// Ces codes sont des codes VILLES (pas aéroports) — format 3 lettres Amadeus
+// ─── IATA city codes ──────────────────────────────────────────────────────────
 const CITY_IATA: Record<string, string> = {
-  // Belgique
   "bruxelles": "BRU", "brussels": "BRU",
   "liege": "LGG", "liège": "LGG",
   "charleroi": "CRL",
   "anvers": "ANR", "antwerpen": "ANR", "antwerp": "ANR",
   "gent": "GNE", "gand": "GNE",
-  "bruges": "OST", // Bruges → Ostende (le plus proche avec hôtels Amadeus)
-  "ostende": "OST",
-  "namur": "QNM",
-  "mons": "QMX",
-  "spa": "LGG",    // Spa → Liège (même zone hôtelière Amadeus)
-  "durbuy": "LGG", // Durbuy → Liège
-  "dinant": "LGG", // Dinant → Liège
-  "bastogne": "LGG",
-  "arlon": "LUX",  // Arlon → Luxembourg
-  "tournai": "LIL", // Tournai → Lille
-  "verviers": "LGG",
-  "hasselt": "BRU",
-  "leuven": "BRU",
+  "bruges": "OST", "ostende": "OST",
+  "namur": "QNM", "mons": "QMX",
+  "spa": "LGG", "durbuy": "LGG", "dinant": "LGG",
+  "bastogne": "LGG", "arlon": "LUX", "tournai": "LIL",
+  "verviers": "LGG", "hasselt": "BRU", "leuven": "BRU",
   // France
   "paris": "PAR", "lyon": "LYS", "marseille": "MRS",
   "bordeaux": "BOD", "toulouse": "TLS", "nice": "NCE",
   "strasbourg": "SXB", "lille": "LIL", "nantes": "NTE",
+  "montpellier": "MPL", "rennes": "RNS",
   // Europe
-  "amsterdam": "AMS", "london": "LON", "rome": "ROM",
+  "amsterdam": "AMS", "london": "LON", "rome": "ROM", "roma": "ROM",
   "madrid": "MAD", "barcelona": "BCN", "berlin": "BER",
-  "munich": "MUC", "vienna": "VIE", "lisbon": "LIS",
-  "prague": "PRG", "budapest": "BUD", "warsaw": "WAW",
-  "zurich": "ZRH", "geneva": "GVA", "milan": "MIL",
+  "munich": "MUC", "vienna": "VIE", "lisbon": "LIS", "lisbonne": "LIS",
+  "prague": "PRG", "budapest": "BUD", "warsaw": "WAW", "varsovie": "WAW",
+  "zurich": "ZRH", "geneva": "GVA", "genève": "GVA", "milan": "MIL",
   "luxembourg": "LUX", "cologne": "CGN", "frankfurt": "FRA",
-  "rotterdam": "RTM",
-  "stockholm": "STO", "oslo": "OSL", "copenhagen": "CPH",
-  "dublin": "DUB", "edinburgh": "EDI", "athens": "ATH",
+  "rotterdam": "RTM", "stockholm": "STO", "oslo": "OSL",
+  "copenhagen": "CPH", "copenhague": "CPH",
+  "dublin": "DUB", "edinburgh": "EDI", "athens": "ATH", "athènes": "ATH",
+  "istanbul": "IST", "dubai": "DXB", "marrakech": "RAK",
+  "new york": "NYC", "los angeles": "LAX", "tokyo": "TYO",
+  "bangkok": "BKK", "bali": "DPS", "cancun": "CUN",
 };
 
 function getCityIata(location: string): string | null {
@@ -85,18 +57,14 @@ function getCityIata(location: string): string | null {
     .replace(/(belgique|belgium|france|europe|hotel|hôtel|ville\s+de|de\s+)/gi, "")
     .trim();
 
-  // Cherche une correspondance dans la liste
   for (const [key, code] of Object.entries(CITY_IATA)) {
     if (l.includes(key)) return code;
   }
 
-  // Dernière chance : extrait le premier mot et prend les 3 premières lettres
-  // SEULEMENT si le mot fait plus de 4 caractères (évite "spa" → "SPA" = USA)
   const firstWord = l.split(/[\s,]+/)[0];
   if (firstWord && firstWord.length > 4) {
     return firstWord.slice(0, 3).toUpperCase();
   }
-
   return null;
 }
 
@@ -117,10 +85,13 @@ const COORDS: Record<string, { lat: number; lng: number }> = {
   "rome": { lat: 41.9028, lng: 12.4964 }, "berlin": { lat: 52.5200, lng: 13.4050 },
   "munich": { lat: 48.1351, lng: 11.5820 }, "vienna": { lat: 48.2082, lng: 16.3738 },
   "prague": { lat: 50.0755, lng: 14.4378 }, "nice": { lat: 43.7102, lng: 7.2620 },
-  "lyon": { lat: 45.7640, lng: 4.8357 },
+  "lyon": { lat: 45.7640, lng: 4.8357 }, "lisbon": { lat: 38.7223, lng: -9.1393 },
+  "istanbul": { lat: 41.0082, lng: 28.9784 }, "dubai": { lat: 25.2048, lng: 55.2708 },
+  "marrakech": { lat: 31.6295, lng: -7.9811 }, "new york": { lat: 40.7128, lng: -74.0060 },
+  "tokyo": { lat: 35.6762, lng: 139.6503 }, "bangkok": { lat: 13.7563, lng: 100.5018 },
 };
 
-function getCoords(location: string): { lat: number; lng: number } {
+export function getCoords(location: string): { lat: number; lng: number } {
   const l = location.toLowerCase().trim();
   for (const [key, coords] of Object.entries(COORDS)) {
     if (l.includes(key)) return coords;
@@ -128,114 +99,268 @@ function getCoords(location: string): { lat: number; lng: number } {
   return { lat: 50.5039, lng: 4.4699 }; // Centre Belgique
 }
 
+// ─── Amadeus Hotel Data Types ─────────────────────────────────────────────────
+interface AmadeusHotelListItem {
+  hotelId: string;
+  name?: string;
+  geoCode?: { latitude: number; longitude: number };
+}
+
+interface AmadeusHotelOffer {
+  available?: boolean;
+  hotel: {
+    hotelId: string;
+    name: string;
+    latitude: number;
+    longitude: number;
+    amenities?: string[];
+    rating?: string;
+    cityCode?: string;
+  };
+  offers: Array<{
+    id: string;
+    price: { total: string; currency: string; base?: string };
+    room?: {
+      typeEstimated?: { category?: string; beds?: number; bedType?: string };
+      description?: { text?: string };
+    };
+    policies?: {
+      cancellation?: { type?: string; description?: { text?: string } };
+      guarantee?: { acceptedPayments?: { methods: string[] } };
+    };
+    boardType?: string;
+    checkInDate?: string;
+    checkOutDate?: string;
+  }>;
+}
+
+// ─── Enhanced Hotel Result ────────────────────────────────────────────────────
+export interface EnhancedHotelResult extends HotelResult {
+  offerId?: string;
+  roomType?: string;
+  roomDescription?: string;
+  boardType?: string;
+  cancellationPolicy?: string;
+  freeCancellation?: boolean;
+  priceNum?: number;
+  currency?: string;
+  checkIn?: string;
+  checkOut?: string;
+  hotelRating?: number;
+  cityCode?: string;
+}
+
 // ─── Step 1: Hotel List API → liste des hotelIds ──────────────────────────────
-// Doc: GET /v1/reference-data/locations/hotels/by-city?cityCode=BRU
-async function getHotelIds(token: string, cityCode: string): Promise<string[]> {
-  try {
-    const url = `${AMADEUS_BASE}/v1/reference-data/locations/hotels/by-city?cityCode=${cityCode}&radius=20&radiusUnit=KM&ratings=3,4,5&hotelSource=ALL`;
-    const res = await fetch(url, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
-    const data = await res.json();
-
-    if (!data.data || data.data.length === 0) {
-      console.warn(`Hotel List: aucun hôtel pour cityCode=${cityCode}`);
-      return [];
+async function getHotelIds(cityCode: string): Promise<string[]> {
+  const result = await amadeusGet<AmadeusHotelListItem>(
+    "/v1/reference-data/locations/hotels/by-city",
+    {
+      cityCode,
+      radius: 20,
+      radiusUnit: "KM",
+      ratings: "3,4,5",
+      hotelSource: "ALL",
     }
+  );
 
-    const ids = data.data
-      .slice(0, 15)
-      .map((h: { hotelId: string }) => h.hotelId)
-      .filter(Boolean);
-
-    console.log(`Hotel List: ${ids.length} hôtels trouvés pour ${cityCode}`);
-    return ids;
-  } catch (e) {
-    console.error("Hotel List API error:", e);
+  if (!result?.data?.length) {
+    console.warn(`Hotel List: aucun hôtel pour cityCode=${cityCode}`);
     return [];
   }
+
+  const ids = result.data
+    .slice(0, 30) // Increased from 15 to 30
+    .map((h) => h.hotelId)
+    .filter(Boolean);
+
+  console.log(`Hotel List: ${ids.length} hôtels trouvés pour ${cityCode}`);
+  return ids;
 }
 
 // ─── Step 2: Hotel Search API v3 → offres avec prix ──────────────────────────
-// Doc: GET /v3/shopping/hotel-offers?hotelIds=...&checkInDate=...
-async function getHotelOffers(token: string, hotelIds: string[]): Promise<HotelResult[]> {
+async function getHotelOffers(
+  hotelIds: string[],
+  checkIn?: string,
+  checkOut?: string,
+  adults?: number
+): Promise<EnhancedHotelResult[]> {
   if (hotelIds.length === 0) return [];
 
-  // Dates check-in/check-out (dans 7 jours, 1 nuit)
-  const ci = new Date();
-  ci.setDate(ci.getDate() + 7);
-  const co = new Date();
-  co.setDate(co.getDate() + 8);
-  const checkIn = ci.toISOString().split("T")[0];
-  const checkOut = co.toISOString().split("T")[0];
+  const ci = checkIn || getDefaultCheckIn();
+  const co = checkOut || getDefaultCheckOut();
 
-  // Amadeus accepte max 5 hotelIds par requête pour les offres
-  const batch = hotelIds.slice(0, 5).join(",");
+  // Batch in groups of 5 (Amadeus limit) and run up to 4 batches
+  const batches: string[][] = [];
+  for (let i = 0; i < Math.min(hotelIds.length, 20); i += 5) {
+    batches.push(hotelIds.slice(i, i + 5));
+  }
 
-  try {
-    const url = `${AMADEUS_BASE}/v3/shopping/hotel-offers?hotelIds=${batch}&checkInDate=${checkIn}&checkOutDate=${checkOut}&adults=2&roomQuantity=1&currency=EUR&bestRateOnly=true`;
-    const res = await fetch(url, {
-      headers: { Authorization: `Bearer ${token}` },
+  const allResults: EnhancedHotelResult[] = [];
+  let imgIndex = 0;
+
+  for (const batch of batches) {
+    const batchStr = batch.join(",");
+    const result = await amadeusGet<AmadeusHotelOffer>("/v3/shopping/hotel-offers", {
+      hotelIds: batchStr,
+      checkInDate: ci,
+      checkOutDate: co,
+      adults: adults || 2,
+      roomQuantity: 1,
+      currency: "EUR",
+      bestRateOnly: true,
     });
-    const data = await res.json();
 
-    if (!data.data || data.data.length === 0) {
-      console.warn("Hotel Offers: aucune offre disponible pour ces hôtels");
-      return [];
-    }
+    if (!result?.data?.length) continue;
 
-    return data.data
-      .filter((item: { available?: boolean }) => item.available !== false)
-      .slice(0, 5)
-      .map((item: {
-        hotel: {
-          hotelId: string;
-          name: string;
-          latitude: number;
-          longitude: number;
-          amenities?: string[];
-          rating?: string;
-        };
-        offers: Array<{
-          price: { total: string; currency: string };
-          room?: { typeEstimated?: { category?: string } };
-          policies?: { cancellation?: { type?: string } };
-        }>;
-      }, index: number) => {
+    const mapped = result.data
+      .filter((item) => item.available !== false)
+      .map((item) => {
         const h = item.hotel;
         const offer = item.offers?.[0];
         const priceNum = offer?.price?.total ? Math.round(parseFloat(offer.price.total)) : null;
         const price = priceNum ? `${priceNum}€ / nuit` : "Prix sur demande";
         const rating = h.rating ? parseInt(h.rating) : 3;
         const vibeScore = Math.min(99, 65 + rating * 6 + Math.floor(Math.random() * 8));
+
         const amenities = h.amenities?.slice(0, 3).map((a: string) =>
           a.replace(/_/g, " ").toLowerCase().replace(/\b\w/g, (c: string) => c.toUpperCase())
         ) || ["Wi-Fi", "Petit déjeuner", "Parking"];
-        const isFree = offer?.policies?.cancellation?.type !== "FULL_STAY";
+
+        const freeCancellation = offer?.policies?.cancellation?.type !== "FULL_STAY";
+        const roomType = offer?.room?.typeEstimated?.category
+          ? offer.room.typeEstimated.category.replace(/_/g, " ").toLowerCase().replace(/\b\w/g, c => c.toUpperCase())
+          : undefined;
+
+        const boardLabels: Record<string, string> = {
+          ROOM_ONLY: "Chambre seule",
+          BREAKFAST: "Petit-déjeuner inclus",
+          HALF_BOARD: "Demi-pension",
+          FULL_BOARD: "Pension complète",
+          ALL_INCLUSIVE: "Tout inclus",
+        };
+
+        const currentImg = IMAGES[imgIndex % IMAGES.length];
+        imgIndex++;
 
         return {
           id: h.hotelId,
-          name: h.name
-            .split(" ")
-            .map((w: string) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())
-            .join(" "),
+          name: h.name.split(" ").map((w: string) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(" "),
           price,
-          imageUrl: IMAGES[index % IMAGES.length],
+          imageUrl: currentImg,
           vibeScore,
-          tags: [...amenities, ...(isFree ? [] : [])],
+          tags: [...amenities],
           lat: h.latitude,
           lng: h.longitude,
           weather: (["sunny", "cloudy", "rainy"] as const)[Math.floor(Math.random() * 3)],
-        };
+          // Enhanced fields
+          offerId: offer?.id,
+          roomType,
+          roomDescription: offer?.room?.description?.text,
+          boardType: offer?.boardType ? (boardLabels[offer.boardType] || offer.boardType) : undefined,
+          cancellationPolicy: offer?.policies?.cancellation?.description?.text,
+          freeCancellation,
+          priceNum: priceNum ?? undefined,
+          currency: offer?.price?.currency || "EUR",
+          checkIn: ci,
+          checkOut: co,
+          hotelRating: rating,
+          cityCode: h.cityCode,
+        } as EnhancedHotelResult;
       });
-  } catch (e) {
-    console.error("Hotel Offers API error:", e);
-    return [];
+
+    allResults.push(...mapped);
   }
+
+  return allResults;
 }
 
-// ─── Fallback quand Amadeus ne trouve rien ────────────────────────────────────
-function buildFallback(filters: SearchFilters): HotelResult[] {
+// ─── Hotel Ratings / Sentiments ───────────────────────────────────────────────
+export interface HotelSentiment {
+  hotelId: string;
+  overallRating: number;
+  numberOfReviews: number;
+  numberOfRatings: number;
+  sentiments: {
+    sleepQuality: number;
+    service: number;
+    facilities: number;
+    roomComforts: number;
+    valueForMoney: number;
+    catering: number;
+    location: number;
+    pointsOfInterest: number;
+    staff: number;
+    internet?: number;
+    swimmingPool?: number;
+  };
+}
+
+export async function getHotelRatings(hotelIds: string[]): Promise<HotelSentiment[]> {
+  if (hotelIds.length === 0) return [];
+
+  const result = await amadeusGet<HotelSentiment>("/v2/e-reputation/hotel-sentiments", {
+    hotelIds: hotelIds.slice(0, 3).join(","),
+  });
+
+  return result?.data || [];
+}
+
+// ─── Hotel Booking ────────────────────────────────────────────────────────────
+export interface HotelBookingRequest {
+  offerId: string;
+  guests: Array<{
+    name: { title: string; firstName: string; lastName: string };
+    contact: { email: string; phone: string };
+  }>;
+  payment?: {
+    method: string;
+    card?: {
+      vendorCode: string;
+      cardNumber: string;
+      expiryDate: string;
+    };
+  };
+}
+
+export interface HotelBookingResult {
+  success: boolean;
+  bookingId?: string;
+  providerConfirmationId?: string;
+  error?: string;
+}
+
+export async function bookHotel(request: HotelBookingRequest): Promise<HotelBookingResult> {
+  const body = {
+    data: {
+      offerId: request.offerId,
+      guests: request.guests,
+      payments: request.payment ? [{
+        method: request.payment.method,
+        card: request.payment.card,
+      }] : undefined,
+    },
+  };
+
+  const result = await amadeusPost<Array<{
+    id: string;
+    providerConfirmationId?: string;
+    type: string;
+  }>>("/v1/booking/hotel-bookings", body);
+
+  if (!result?.data) {
+    return { success: false, error: "Réservation impossible" };
+  }
+
+  const booking = Array.isArray(result.data) ? result.data[0] : result.data;
+  return {
+    success: true,
+    bookingId: booking?.id,
+    providerConfirmationId: booking?.providerConfirmationId,
+  };
+}
+
+// ─── Fallback ─────────────────────────────────────────────────────────────────
+function buildFallback(filters: SearchFilters): EnhancedHotelResult[] {
   const coords = getCoords(filters.location);
   const loc = filters.location
     .replace(/(belgique|belgium|france|europe)/gi, "")
@@ -245,78 +370,55 @@ function buildFallback(filters: SearchFilters): HotelResult[] {
 
   return [
     {
-      id: "mock1",
-      name: `Lodge Premium – ${loc}`,
-      price: `${maxP ? maxP - 40 : 149}€ / nuit`,
-      imageUrl: IMAGES[0], vibeScore: 96,
+      id: "mock1", name: `Lodge Premium – ${loc}`,
+      price: `${maxP ? maxP - 40 : 149}€ / nuit`, imageUrl: IMAGES[0], vibeScore: 96,
       tags: [filters.amenities?.[0] || "Spa", "Vue Panoramique", "Proche Centre"],
-      lat: coords.lat + (Math.random() - 0.5) * 0.04,
-      lng: coords.lng + (Math.random() - 0.5) * 0.04,
-      weather: "sunny" as const,
+      lat: coords.lat + (Math.random() - 0.5) * 0.04, lng: coords.lng + (Math.random() - 0.5) * 0.04,
+      weather: "sunny" as const, freeCancellation: true, priceNum: maxP ? maxP - 40 : 149, hotelRating: 5,
     },
     {
-      id: "mock2",
-      name: `Hôtel Boutique – ${loc}`,
-      price: `${maxP ? maxP - 60 : 119}€ / nuit`,
-      imageUrl: IMAGES[1], vibeScore: 91,
+      id: "mock2", name: `Hôtel Boutique – ${loc}`,
+      price: `${maxP ? maxP - 60 : 119}€ / nuit`, imageUrl: IMAGES[1], vibeScore: 91,
       tags: ["Petit-déjeuner inclus", "Design", "Calme"],
-      lat: coords.lat + (Math.random() - 0.5) * 0.04,
-      lng: coords.lng + (Math.random() - 0.5) * 0.04,
-      weather: "cloudy" as const,
+      lat: coords.lat + (Math.random() - 0.5) * 0.04, lng: coords.lng + (Math.random() - 0.5) * 0.04,
+      weather: "cloudy" as const, freeCancellation: true, priceNum: maxP ? maxP - 60 : 119, hotelRating: 4,
     },
     {
-      id: "mock3",
-      name: `Grand Hôtel – ${loc}`,
-      price: `${maxP ? maxP - 20 : 195}€ / nuit`,
-      imageUrl: IMAGES[2], vibeScore: 88,
+      id: "mock3", name: `Grand Hôtel – ${loc}`,
+      price: `${maxP ? maxP - 20 : 195}€ / nuit`, imageUrl: IMAGES[2], vibeScore: 88,
       tags: ["Piscine", "Restaurant Gastronomique", "Parking"],
-      lat: coords.lat + (Math.random() - 0.5) * 0.04,
-      lng: coords.lng + (Math.random() - 0.5) * 0.04,
-      weather: "rainy" as const,
+      lat: coords.lat + (Math.random() - 0.5) * 0.04, lng: coords.lng + (Math.random() - 0.5) * 0.04,
+      weather: "rainy" as const, freeCancellation: false, priceNum: maxP ? maxP - 20 : 195, hotelRating: 4,
     },
     {
-      id: "mock4",
-      name: `Château Séjour – ${loc}`,
-      price: `${maxP ? maxP + 20 : 249}€ / nuit`,
-      imageUrl: IMAGES[5], vibeScore: 98,
+      id: "mock4", name: `Château Séjour – ${loc}`,
+      price: `${maxP ? maxP + 20 : 249}€ / nuit`, imageUrl: IMAGES[5], vibeScore: 98,
       tags: ["Romantique", "Table Étoilée", "Parc Privé"],
-      lat: coords.lat + (Math.random() - 0.5) * 0.04,
-      lng: coords.lng + (Math.random() - 0.5) * 0.04,
-      weather: "sunny" as const,
+      lat: coords.lat + (Math.random() - 0.5) * 0.04, lng: coords.lng + (Math.random() - 0.5) * 0.04,
+      weather: "sunny" as const, freeCancellation: true, priceNum: maxP ? maxP + 20 : 249, hotelRating: 5,
     },
   ];
 }
 
 // ─── Export principal ─────────────────────────────────────────────────────────
-export async function searchHotels(filters: SearchFilters): Promise<HotelResult[]> {
-  const token = await getAmadeusToken();
+export async function searchHotels(filters: SearchFilters): Promise<EnhancedHotelResult[]> {
+  const cityCode = getCityIata(filters.location);
+  console.log(`🔍 Recherche: "${filters.location}" → cityCode: ${cityCode}`);
 
-  if (token) {
-    // 1. Convertit le nom de ville en code IATA
-    const cityCode = getCityIata(filters.location);
-    console.log(`🔍 Recherche: "${filters.location}" → cityCode: ${cityCode}`);
+  if (cityCode) {
+    const hotelIds = await getHotelIds(cityCode);
 
-    if (cityCode) {
-      // 2. Hotel List API → récupère les IDs des hôtels dans la ville
-      const hotelIds = await getHotelIds(token, cityCode);
+    if (hotelIds.length > 0) {
+      const results = await getHotelOffers(
+        hotelIds,
+        filters.checkIn,
+        filters.checkOut,
+        filters.guests
+      );
 
-      if (hotelIds.length > 0) {
-        // 3. Hotel Search API → récupère les offres avec vrais prix
-        const results = await getHotelOffers(token, hotelIds);
-
-        if (results.length > 0) {
-          console.log(`✅ Amadeus: ${results.length} hôtels réels pour "${filters.location}"`);
-          return results;
-        }
-
-        // Si pas d'offres dispo, essaie avec d'autres hôtels de la liste
-        if (hotelIds.length > 5) {
-          const results2 = await getHotelOffers(token, hotelIds.slice(5, 10));
-          if (results2.length > 0) {
-            console.log(`✅ Amadeus (batch 2): ${results2.length} hôtels pour "${filters.location}"`);
-            return results2;
-          }
-        }
+      if (results.length > 0) {
+        console.log(`✅ Amadeus: ${results.length} hôtels réels pour "${filters.location}"`);
+        return results;
       }
     }
   }
@@ -324,3 +426,5 @@ export async function searchHotels(filters: SearchFilters): Promise<HotelResult[
   console.warn(`⚠️ Fallback pour: "${filters.location}"`);
   return buildFallback(filters);
 }
+
+export { getCityIata, getCoords as getCoordsForCity };

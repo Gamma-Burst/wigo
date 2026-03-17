@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import { useRouter } from "next/navigation";
 import { useUser, SignInButton } from "@clerk/nextjs";
 import CategoryTabs, { CATEGORIES, type CategoryId } from "./CategoryTabs";
 import ResultsGrid from "./ResultsGrid";
@@ -11,6 +12,7 @@ import { Search, Sparkles, ArrowRight } from "lucide-react";
 // ─── Category headlines ───────────────────────────────────────────────────────
 const HEADLINES: Record<string, { line1: string; line2: string; sub: string }> = {
   hotels:      { line1: "L'hôtel parfait,", line2: "trouvé en 3 secondes", sub: "Décrivez votre envie, l'IA trouve le bon plan parmi 150 000 hébergements." },
+  flights:     { line1: "Le vol idéal,", line2: "au meilleur prix", sub: "Comparez toutes les compagnies aériennes en temps réel avec Amadeus." },
   hiking:      { line1: "Les plus beaux sentiers", line2: "d'Europe vous attendent", sub: "Randonnées guidées par l'IA selon votre niveau et votre région." },
   events:      { line1: "Les événements", line2: "que vous ne manquerez pas", sub: "Festivals, marchés médiévaux, fêtes locales — tout ce qui se passe près de vous." },
   restaurants: { line1: "La meilleure table", line2: "est juste à côté", sub: "De la gastronomie étoilée aux adresses secrètes des locaux." },
@@ -115,6 +117,7 @@ function ParticleCanvas() {
 // ─── Main Hero ────────────────────────────────────────────────────────────────
 export default function Hero() {
   const { isSignedIn } = useUser();
+  const router = useRouter();
   const [query, setQuery] = useState("");
   const [activeCategory, setActiveCategory] = useState<CategoryId>("hotels");
   const [isSearching, setIsSearching] = useState(false);
@@ -326,7 +329,7 @@ export default function Hero() {
         <div className="w-full mb-6 animate-slide-up delay-200">
           <CategoryTabs
             active={activeCategory}
-            onChange={(id) => { setActiveCategory(id); setResults(null); }}
+            onChange={(id) => { if (id === "flights") { router.push("/vols"); return; } setActiveCategory(id); setResults(null); }}
           />
         </div>
 
@@ -384,8 +387,8 @@ export default function Hero() {
         <div className="flex flex-wrap items-center justify-center gap-8 mt-16 animate-slide-up delay-400">
           {[
             ["150 000+", "Hébergements"],
+            ["500+", "Compagnies aériennes"],
             ["50 000+", "Activités"],
-            ["8", "Catégories"],
             ["IA", "Gemini 2.0"],
           ].map(([val, label]) => (
             <div key={label} className="text-center">
