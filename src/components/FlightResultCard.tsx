@@ -73,11 +73,17 @@ export default function FlightResultCard({ flight, onSelect, isSelected }: Fligh
   const stopsLabel = flight.stops === 0 ? "Direct" : `${flight.stops} escale${flight.stops > 1 ? "s" : ""}`;
   const stopsColor = flight.stops === 0 ? "text-emerald-500" : flight.stops === 1 ? "text-amber-500" : "text-red-400";
 
+  // --- CORRECTION DU LIEN D'AFFILIATION ---
   const getAffiliateLink = () => {
-    const dateAller = flight.departureTime.split("T")[0];
-    const baseUrl = `https://search.aviasales.com/flights/`;
-    const params = `?origin=${flight.origin}&destination=${flight.destination}&depart_date=${dateAller}&marker=${TRAVELPAYOUTS_MARKER}`;
-    return baseUrl + params;
+    const d = new Date(flight.departureTime);
+    const day = String(d.getDate()).padStart(2, '0');
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+
+    // Format attendu par Aviasales: /search/ORIGINDDMMDEST1
+    // Le '1' à la fin indique 1 passager adulte.
+    const searchPath = `${flight.origin}${day}${month}${flight.destination}1`;
+
+    return `https://www.aviasales.com/search/${searchPath}?marker=${TRAVELPAYOUTS_MARKER}`;
   };
 
   return (
