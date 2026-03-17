@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import Stripe from 'stripe';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY as string, {
-    apiVersion: '2023-10-16' as any
+    apiVersion: '2026-01-28.clover',
 });
 
 export async function POST(req: Request) {
@@ -16,13 +16,14 @@ export async function POST(req: Request) {
                     currency: 'eur',
                     product_data: {
                         name: `WIGO : ${hotelName}`,
-                        images: [imageUrl]
+                        images: [imageUrl],
                     },
                     unit_amount: Math.round(price * 100), // En centimes pour Stripe
                 },
                 quantity: 1,
             }],
             mode: 'payment',
+            metadata: { hotelId },
             success_url: `${process.env.NEXT_PUBLIC_URL || 'http://localhost:3000'}/historique?success=true`,
             cancel_url: `${process.env.NEXT_PUBLIC_URL || 'http://localhost:3000'}/`,
         });

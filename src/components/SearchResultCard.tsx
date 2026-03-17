@@ -3,8 +3,30 @@
 import Image from "next/image";
 import { Zap, ArrowRight, Star } from "lucide-react";
 import { useState } from "react";
+import { EnhancedHotelResult } from "@/services/hotel-provider";
 
-export default function SearchResultCard({ hotel, isActive, onSelect }: any) {
+export interface HotelResult {
+    id: string;
+    name: string;
+    price: string;
+    imageUrl: string;
+    vibeScore: number;
+    tags: string[];
+    lat: number;
+    lng: number;
+    weather?: string;
+    hotelRating?: number;
+    priceNum?: number;
+}
+
+
+interface SearchResultCardProps {
+    hotel: EnhancedHotelResult;
+    isActive?: boolean;
+    onSelect?: () => void;
+}
+
+export default function SearchResultCard({ hotel, isActive, onSelect }: SearchResultCardProps) {
     const [loading, setLoading] = useState(false);
 
     const handleInternalBooking = async (e: React.MouseEvent) => {
@@ -15,13 +37,13 @@ export default function SearchResultCard({ hotel, isActive, onSelect }: any) {
                 method: 'POST',
                 body: JSON.stringify({
                     hotelName: hotel.name,
-                    price: hotel.priceNum, // Prix majoré de 15%
+                    price: hotel.priceNum,
                     hotelId: hotel.id,
                     imageUrl: hotel.imageUrl
                 })
             });
-            const { url } = await res.json();
-            window.location.href = url; // Redirection vers TON Stripe
+            const data = await res.json();
+            if (data.url) window.location.href = data.url;
         } catch {
             setLoading(false);
         }
