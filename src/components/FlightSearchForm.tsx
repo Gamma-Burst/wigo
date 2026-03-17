@@ -89,12 +89,42 @@ export default function FlightSearchForm({ onSearch, isSearching }: FlightSearch
     setDestination(origin); setDestinationCode(originCode);
   };
 
+  // Auto-detect IATA codes typed directly (3 uppercase letters)
+  const isIataCode = (s: string) => /^[A-Z]{3}$/.test(s.trim().toUpperCase());
+  const extractIataFromInput = (s: string) => {
+    // Match "City (CODE)" pattern
+    const match = s.match(/\(([A-Z]{3})\)/);
+    if (match) return match[1];
+    // Match raw 3-letter code
+    if (isIataCode(s)) return s.trim().toUpperCase();
+    return "";
+  };
+
+  // Auto-set code when user types a valid IATA code directly
+  useEffect(() => {
+    if (!originCode && origin.length >= 3) {
+      const code = extractIataFromInput(origin);
+      if (code) { setOriginCode(code); setOrigin(`${origin.trim().toUpperCase()} ✈`); setShowOriginDrop(false); }
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [origin]);
+
+  useEffect(() => {
+    if (!destinationCode && destination.length >= 3) {
+      const code = extractIataFromInput(destination);
+      if (code) { setDestinationCode(code); setDestination(`${destination.trim().toUpperCase()} ✈`); setShowDestDrop(false); }
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [destination]);
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!originCode || !destinationCode || !departDate) return;
+    const oCode = originCode || extractIataFromInput(origin);
+    const dCode = destinationCode || extractIataFromInput(destination);
+    if (!oCode || !dCode || !departDate) return;
     onSearch({
-      origin: originCode,
-      destination: destinationCode,
+      origin: oCode,
+      destination: dCode,
       departDate,
       returnDate: isRoundTrip ? returnDate : undefined,
       adults,
@@ -203,7 +233,7 @@ export default function FlightSearchForm({ onSearch, isSearching }: FlightSearch
 
           {/* Search button */}
           <div className="md:col-span-1 flex items-center">
-            <button type="submit" disabled={isSearching || !originCode || !destinationCode}
+            <button type="submit" disabled={isSearching || (!originCode && !isIataCode(origin)) || (!destinationCode && !isIataCode(destination))}
               className="w-full h-full btn-accent rounded-xl flex items-center justify-center gap-2 py-3 disabled:opacity-40 disabled:cursor-not-allowed">
               {isSearching ? (
                 <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />

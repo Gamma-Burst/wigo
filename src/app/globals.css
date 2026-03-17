@@ -65,6 +65,39 @@ body {
   font-family: var(--font-serif) !important;
 }
 
+/* ─── Button Styles ───────────────────────────────────────────────────────── */
+.btn-accent {
+  background: var(--accent);
+  color: white;
+  font-weight: 700;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 14px rgba(232, 101, 42, 0.3);
+}
+.btn-accent:hover {
+  background: #d45a24;
+  box-shadow: 0 6px 20px rgba(232, 101, 42, 0.45);
+  transform: translateY(-1px);
+}
+.btn-accent:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.btn-forest {
+  background: var(--forest);
+  color: white;
+  font-weight: 700;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 14px rgba(30, 58, 47, 0.3);
+}
+.btn-forest:hover {
+  background: var(--forest-light);
+  box-shadow: 0 6px 20px rgba(30, 58, 47, 0.45);
+  transform: translateY(-1px);
+}
+
 /* ─── Premium Glassmorphism ────────────────────────────────────────────────── */
 .glass {
   background: rgba(255, 255, 255, 0.08);
