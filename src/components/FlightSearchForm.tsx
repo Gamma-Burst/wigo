@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback } from "react";
-import { Plane, ArrowRightLeft, Calendar, Users, Search, ChevronDown } from "lucide-react";
+import { Plane, ArrowRightLeft, Calendar, Users, Search, ChevronDown, MapPin } from "lucide-react";
 
 interface LocationSuggestion {
   iataCode: string;
@@ -43,7 +43,7 @@ export default function FlightSearchForm({ onSearch, isSearching }: FlightSearch
   const destRef = useRef<HTMLDivElement>(null);
   const passRef = useRef<HTMLDivElement>(null);
 
-  // Default dates
+  // Initialisation des dates par défaut
   useEffect(() => {
     const today = new Date();
     const dep = new Date(today);
@@ -54,7 +54,7 @@ export default function FlightSearchForm({ onSearch, isSearching }: FlightSearch
     setReturnDate(ret.toISOString().split("T")[0]);
   }, []);
 
-  // Close dropdowns on outside click
+  // Fermeture des menus au clic extérieur
   useEffect(() => {
     function handleClick(e: MouseEvent) {
       if (originRef.current && !originRef.current.contains(e.target as Node)) setShowOriginDrop(false);
@@ -75,56 +75,32 @@ export default function FlightSearchForm({ onSearch, isSearching }: FlightSearch
   }, []);
 
   useEffect(() => {
-    const t = setTimeout(() => { if (origin.length >= 2 && !originCode) fetchLocations(origin, setOriginSuggestions); }, 300);
+    const t = setTimeout(() => {
+      if (origin.length >= 2 && !originCode) fetchLocations(origin, setOriginSuggestions);
+    }, 300);
     return () => clearTimeout(t);
   }, [origin, originCode, fetchLocations]);
 
   useEffect(() => {
-    const t = setTimeout(() => { if (destination.length >= 2 && !destinationCode) fetchLocations(destination, setDestSuggestions); }, 300);
+    const t = setTimeout(() => {
+      if (destination.length >= 2 && !destinationCode) fetchLocations(destination, setDestSuggestions);
+    }, 300);
     return () => clearTimeout(t);
   }, [destination, destinationCode, fetchLocations]);
 
   const handleSwap = () => {
+    const tempName = origin;
+    const tempCode = originCode;
     setOrigin(destination); setOriginCode(destinationCode);
-    setDestination(origin); setDestinationCode(originCode);
+    setDestination(tempName); setDestinationCode(tempCode);
   };
-
-  // Auto-detect IATA codes typed directly (3 uppercase letters)
-  const isIataCode = (s: string) => /^[A-Z]{3}$/.test(s.trim().toUpperCase());
-  const extractIataFromInput = (s: string) => {
-    // Match "City (CODE)" pattern
-    const match = s.match(/\(([A-Z]{3})\)/);
-    if (match) return match[1];
-    // Match raw 3-letter code
-    if (isIataCode(s)) return s.trim().toUpperCase();
-    return "";
-  };
-
-  // Auto-set code when user types a valid IATA code directly
-  useEffect(() => {
-    if (!originCode && origin.length >= 3) {
-      const code = extractIataFromInput(origin);
-      if (code) { setOriginCode(code); setOrigin(`${origin.trim().toUpperCase()} ✈`); setShowOriginDrop(false); }
-    }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [origin]);
-
-  useEffect(() => {
-    if (!destinationCode && destination.length >= 3) {
-      const code = extractIataFromInput(destination);
-      if (code) { setDestinationCode(code); setDestination(`${destination.trim().toUpperCase()} ✈`); setShowDestDrop(false); }
-    }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [destination]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    const oCode = originCode || extractIataFromInput(origin);
-    const dCode = destinationCode || extractIataFromInput(destination);
-    if (!oCode || !dCode || !departDate) return;
+    if (!originCode || !destinationCode || !departDate) return;
     onSearch({
-      origin: oCode,
-      destination: dCode,
+      origin: originCode,
+      destination: destinationCode,
       departDate,
       returnDate: isRoundTrip ? returnDate : undefined,
       adults,
@@ -133,83 +109,102 @@ export default function FlightSearchForm({ onSearch, isSearching }: FlightSearch
   };
 
   const cabinLabels: Record<string, string> = {
-    ECONOMY: "Économique", PREMIUM_ECONOMY: "Premium Éco", BUSINESS: "Business", FIRST: "Première",
+    ECONOMY: "Éco", PREMIUM_ECONOMY: "Premium", BUSINESS: "Business", FIRST: "First",
   };
 
-  const inputBase = "bg-transparent text-white placeholder-white/40 outline-none w-full text-sm";
+  const inputContainerClass = "flex items-center gap-3 px-4 py-3 bg-white/5 rounded-xl border border-white/10 focus-within:border-accent/50 focus-within:bg-white/10 transition-all";
+  const inputBase = "bg-transparent text-white placeholder-white/30 outline-none w-full text-sm font-medium";
 
   return (
-    <form onSubmit={handleSubmit} className="w-full max-w-4xl mx-auto">
-      {/* Trip type toggle */}
-      <div className="flex items-center gap-3 mb-4">
-        <button type="button" onClick={() => setIsRoundTrip(true)}
-          className={`px-4 py-2 rounded-full text-xs font-semibold transition-all border ${isRoundTrip ? "bg-accent text-white border-accent" : "bg-white/10 text-white/70 border-white/20 hover:bg-white/20"}`}>
-          ↔ Aller-retour
-        </button>
-        <button type="button" onClick={() => setIsRoundTrip(false)}
-          className={`px-4 py-2 rounded-full text-xs font-semibold transition-all border ${!isRoundTrip ? "bg-accent text-white border-accent" : "bg-white/10 text-white/70 border-white/20 hover:bg-white/20"}`}>
-          → Aller simple
-        </button>
+    <form onSubmit={handleSubmit} className="w-full max-w-5xl mx-auto space-y-4">
+      {/* Type de voyage & Options */}
+      <div className="flex flex-wrap items-center justify-between gap-4">
+        <div className="flex items-center gap-2 p-1 bg-white/5 rounded-xl border border-white/10">
+          <button type="button" onClick={() => setIsRoundTrip(true)}
+            className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${isRoundTrip ? "bg-accent text-white shadow-lg" : "text-white/50 hover:text-white"}`}>
+            Aller-retour
+          </button>
+          <button type="button" onClick={() => setIsRoundTrip(false)}
+            className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${!isRoundTrip ? "bg-accent text-white shadow-lg" : "text-white/50 hover:text-white"}`}>
+            Aller simple
+          </button>
+        </div>
+
+        <div className="flex items-center gap-2">
+          {Object.entries(cabinLabels).map(([key, label]) => (
+            <button key={key} type="button" onClick={() => setCabin(key)}
+              className={`text-[10px] uppercase tracking-wider font-black px-3 py-1.5 rounded-lg border transition-all ${cabin === key ? "border-accent text-accent bg-accent/10" : "border-white/5 text-white/30 hover:text-white/60"}`}>
+              {label}
+            </button>
+          ))}
+        </div>
       </div>
 
-      <div className="bg-white/10 backdrop-blur-2xl border border-white/18 rounded-2xl p-3 shadow-2xl shadow-black/30">
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-2">
-          {/* Origin */}
-          <div ref={originRef} className="md:col-span-3 relative">
-            <div className="flex items-center gap-2 px-3 py-3 bg-white/5 rounded-xl border border-white/10">
-              <Plane className="w-4 h-4 text-accent flex-shrink-0" />
+      <div className="bg-white/5 backdrop-blur-3xl border border-white/10 rounded-3xl p-4 shadow-2xl">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-3 items-center">
+
+          {/* Départ */}
+          <div ref={originRef} className="lg:col-span-3 relative">
+            <div className={inputContainerClass}>
+              <MapPin className="w-4 h-4 text-accent/60" />
               <input
                 type="text"
                 value={origin}
                 onChange={(e) => { setOrigin(e.target.value); setOriginCode(""); setShowOriginDrop(true); }}
                 onFocus={() => originSuggestions.length > 0 && setShowOriginDrop(true)}
-                placeholder="Départ (ville ou aéroport)"
+                placeholder="D'où partez-vous ?"
                 className={inputBase}
               />
             </div>
             {showOriginDrop && originSuggestions.length > 0 && (
-              <div className="absolute top-full left-0 right-0 mt-1 bg-zinc-900 border border-white/15 rounded-xl shadow-2xl z-50 max-h-60 overflow-y-auto">
+              <div className="absolute top-full left-0 right-0 mt-2 bg-[#1a1a18] border border-white/10 rounded-2xl shadow-2xl z-50 overflow-hidden py-1 animate-in fade-in slide-in-from-top-2">
                 {originSuggestions.map((s) => (
                   <button key={s.iataCode} type="button"
                     onClick={() => { setOrigin(`${s.cityName} (${s.iataCode})`); setOriginCode(s.iataCode); setShowOriginDrop(false); }}
-                    className="w-full text-left px-4 py-3 hover:bg-white/10 text-white text-sm flex items-center justify-between transition-colors">
-                    <span><strong>{s.cityName}</strong> <span className="text-white/50">{s.countryName}</span></span>
-                    <span className="text-accent font-mono font-bold text-xs">{s.iataCode}</span>
+                    className="w-full text-left px-4 py-3 hover:bg-white/5 text-white flex items-center justify-between transition-colors">
+                    <div className="flex flex-col">
+                      <span className="text-sm font-bold">{s.cityName}</span>
+                      <span className="text-[10px] text-white/40 uppercase tracking-tighter">{s.countryName}</span>
+                    </div>
+                    <span className="bg-accent/10 text-accent font-mono font-black text-[10px] px-2 py-1 rounded-md">{s.iataCode}</span>
                   </button>
                 ))}
               </div>
             )}
           </div>
 
-          {/* Swap button */}
-          <div className="md:col-span-1 flex items-center justify-center">
+          {/* Swap */}
+          <div className="lg:col-span-1 flex justify-center">
             <button type="button" onClick={handleSwap}
-              className="p-2 bg-white/10 hover:bg-accent/30 rounded-full border border-white/15 transition-all hover:rotate-180 duration-300">
-              <ArrowRightLeft className="w-4 h-4 text-white" />
+              className="p-2.5 bg-white/5 hover:bg-accent/20 rounded-full border border-white/10 transition-all hover:rotate-180 duration-500">
+              <ArrowRightLeft className="w-4 h-4 text-white/60" />
             </button>
           </div>
 
           {/* Destination */}
-          <div ref={destRef} className="md:col-span-3 relative">
-            <div className="flex items-center gap-2 px-3 py-3 bg-white/5 rounded-xl border border-white/10">
-              <Plane className="w-4 h-4 text-accent flex-shrink-0 rotate-90" />
+          <div ref={destRef} className="lg:col-span-3 relative">
+            <div className={inputContainerClass}>
+              <Plane className="w-4 h-4 text-accent rotate-90" />
               <input
                 type="text"
                 value={destination}
                 onChange={(e) => { setDestination(e.target.value); setDestinationCode(""); setShowDestDrop(true); }}
                 onFocus={() => destSuggestions.length > 0 && setShowDestDrop(true)}
-                placeholder="Destination"
+                placeholder="Destination (ex: Porto)"
                 className={inputBase}
               />
             </div>
             {showDestDrop && destSuggestions.length > 0 && (
-              <div className="absolute top-full left-0 right-0 mt-1 bg-zinc-900 border border-white/15 rounded-xl shadow-2xl z-50 max-h-60 overflow-y-auto">
+              <div className="absolute top-full left-0 right-0 mt-2 bg-[#1a1a18] border border-white/10 rounded-2xl shadow-2xl z-50 overflow-hidden py-1 animate-in fade-in slide-in-from-top-2">
                 {destSuggestions.map((s) => (
                   <button key={s.iataCode} type="button"
                     onClick={() => { setDestination(`${s.cityName} (${s.iataCode})`); setDestinationCode(s.iataCode); setShowDestDrop(false); }}
-                    className="w-full text-left px-4 py-3 hover:bg-white/10 text-white text-sm flex items-center justify-between transition-colors">
-                    <span><strong>{s.cityName}</strong> <span className="text-white/50">{s.countryName}</span></span>
-                    <span className="text-accent font-mono font-bold text-xs">{s.iataCode}</span>
+                    className="w-full text-left px-4 py-3 hover:bg-white/5 text-white flex items-center justify-between transition-colors">
+                    <div className="flex flex-col">
+                      <span className="text-sm font-bold">{s.cityName}</span>
+                      <span className="text-[10px] text-white/40 uppercase tracking-tighter">{s.countryName}</span>
+                    </div>
+                    <span className="bg-accent/10 text-accent font-mono font-black text-[10px] px-2 py-1 rounded-md">{s.iataCode}</span>
                   </button>
                 ))}
               </div>
@@ -217,24 +212,24 @@ export default function FlightSearchForm({ onSearch, isSearching }: FlightSearch
           </div>
 
           {/* Dates */}
-          <div className={`${isRoundTrip ? "md:col-span-2" : "md:col-span-3"} flex items-center gap-2 px-3 py-3 bg-white/5 rounded-xl border border-white/10`}>
-            <Calendar className="w-4 h-4 text-accent flex-shrink-0" />
+          <div className={`${isRoundTrip ? "lg:col-span-2" : "lg:col-span-4"} ${inputContainerClass}`}>
+            <Calendar className="w-4 h-4 text-accent/60" />
             <input type="date" value={departDate} onChange={(e) => setDepartDate(e.target.value)}
               className={`${inputBase} [color-scheme:dark]`} />
           </div>
 
           {isRoundTrip && (
-            <div className="md:col-span-2 flex items-center gap-2 px-3 py-3 bg-white/5 rounded-xl border border-white/10">
-              <Calendar className="w-4 h-4 text-forest flex-shrink-0" />
+            <div className="lg:col-span-2 flex items-center gap-3 px-4 py-3 bg-white/5 rounded-xl border border-white/10">
+              <Calendar className="w-4 h-4 text-emerald-500/60" />
               <input type="date" value={returnDate} onChange={(e) => setReturnDate(e.target.value)}
                 className={`${inputBase} [color-scheme:dark]`} />
             </div>
           )}
 
-          {/* Search button */}
-          <div className="md:col-span-1 flex items-center">
-            <button type="submit" disabled={isSearching || (!originCode && !isIataCode(origin)) || (!destinationCode && !isIataCode(destination))}
-              className="w-full h-full btn-accent rounded-xl flex items-center justify-center gap-2 py-3 disabled:opacity-40 disabled:cursor-not-allowed">
+          {/* Bouton Search */}
+          <div className="lg:col-span-1">
+            <button type="submit" disabled={isSearching || !originCode || !destinationCode}
+              className="w-full h-full btn-accent rounded-xl flex items-center justify-center py-3 shadow-lg shadow-accent/20 disabled:opacity-30 disabled:grayscale transition-all hover:scale-105 active:scale-95">
               {isSearching ? (
                 <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
               ) : (
@@ -244,38 +239,29 @@ export default function FlightSearchForm({ onSearch, isSearching }: FlightSearch
           </div>
         </div>
 
-        {/* Bottom row: passengers + cabin */}
-        <div className="flex items-center gap-4 mt-2 px-2">
+        {/* Footer: passagers */}
+        <div className="mt-3 flex items-center px-2">
           <div ref={passRef} className="relative">
             <button type="button" onClick={() => setShowPassengers(!showPassengers)}
-              className="flex items-center gap-2 text-white/60 hover:text-white text-xs transition-colors">
+              className="flex items-center gap-2 text-white/40 hover:text-accent transition-colors text-xs font-bold">
               <Users className="w-3.5 h-3.5" />
               <span>{adults} voyageur{adults > 1 ? "s" : ""}</span>
-              <ChevronDown className="w-3 h-3" />
+              <ChevronDown className={`w-3 h-3 transition-transform ${showPassengers ? "rotate-180" : ""}`} />
             </button>
             {showPassengers && (
-              <div className="absolute top-full left-0 mt-2 bg-zinc-900 border border-white/15 rounded-xl shadow-2xl z-50 p-4 min-w-[200px]">
+              <div className="absolute top-full left-0 mt-3 bg-[#1a1a18] border border-white/10 rounded-2xl shadow-2xl z-50 p-4 min-w-[220px] animate-in zoom-in-95">
                 <div className="flex items-center justify-between">
-                  <span className="text-white text-sm">Adultes</span>
-                  <div className="flex items-center gap-3">
+                  <span className="text-white font-bold text-sm">Passagers</span>
+                  <div className="flex items-center gap-4">
                     <button type="button" onClick={() => setAdults(Math.max(1, adults - 1))}
-                      className="w-8 h-8 rounded-full bg-white/10 text-white hover:bg-white/20 flex items-center justify-center font-bold">-</button>
-                    <span className="text-white font-bold w-4 text-center">{adults}</span>
+                      className="w-8 h-8 rounded-lg bg-white/5 border border-white/10 text-white hover:bg-accent/20 flex items-center justify-center font-bold">-</button>
+                    <span className="text-white font-black text-sm">{adults}</span>
                     <button type="button" onClick={() => setAdults(Math.min(9, adults + 1))}
-                      className="w-8 h-8 rounded-full bg-white/10 text-white hover:bg-white/20 flex items-center justify-center font-bold">+</button>
+                      className="w-8 h-8 rounded-lg bg-white/5 border border-white/10 text-white hover:bg-accent/20 flex items-center justify-center font-bold">+</button>
                   </div>
                 </div>
               </div>
             )}
-          </div>
-
-          <div className="flex items-center gap-2">
-            {Object.entries(cabinLabels).map(([key, label]) => (
-              <button key={key} type="button" onClick={() => setCabin(key)}
-                className={`text-xs px-3 py-1 rounded-full transition-all ${cabin === key ? "bg-accent/20 text-accent border border-accent/40" : "text-white/40 hover:text-white/70"}`}>
-                {label}
-              </button>
-            ))}
           </div>
         </div>
       </div>
