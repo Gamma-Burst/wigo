@@ -6,6 +6,9 @@ import { searchActivities } from "@/services/activity-provider";
 
 export const dynamic = "force-dynamic";
 
+// Belgian/nearby airports where BRU flights make no sense
+const DOMESTIC_CODES = new Set(["BRU", "CRL", "LGG", "ANR", "OST", "QNM", "QMX", "LUX"]);
+
 export async function POST(req: NextRequest) {
   try {
     let body;
@@ -18,7 +21,7 @@ export async function POST(req: NextRequest) {
     const { query } = body as { query: string };
     if (!query) return NextResponse.json({ error: "Missing query" }, { status: 400 });
 
-    // 1. Extract intents using Gemini
+    // 1. Extract intents using AI
     const filters = await extractFilters(query);
     if (!filters) {
       return NextResponse.json({ error: "AI extraction failed" }, { status: 500 });
@@ -36,19 +39,24 @@ export async function POST(req: NextRequest) {
       returnDate = returnDateObj.toISOString().split("T")[0];
     }
 
+    const destCode = filters.iataCode || "";
+    const isDomestic = DOMESTIC_CODES.has(destCode);
+
     // 2. Fetch all components of the Package asynchronously
     const [hotels, flights, activities] = await Promise.all([
       // Hotels
       searchHotels(filters).catch(() => []),
 
-      // Flights (Defaulting origin to BRU for Belgian market)
-      searchFlights({
-        origin: "BRU",
-        destination: filters.iataCode || "LIS",
-        departDate,
-        returnDate,
-        adults: filters.guests || 2,
-      }).catch(() => []),
+      // Flights — skip for domestic/nearby destinations (BRU → BRU makes no sense)
+      isDomestic
+        ? Promise.resolve([])
+        : searchFlights({
+            origin: "BRU",
+            destination: destCode || "LIS",
+            departDate,
+            returnDate,
+            adults: filters.guests || 2,
+          }).catch(() => []),
 
       // Activities
       (async () => {
