@@ -131,7 +131,31 @@ export default function Hero() {
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data: { user } }) => setIsSignedIn(!!user));
+    
+    // Restaurer la recherche précédente si elle existe
+    try {
+      const savedQuery = sessionStorage.getItem('wigo_search_query');
+      const savedCategory = sessionStorage.getItem('wigo_search_category');
+      const savedResults = sessionStorage.getItem('wigo_search_results');
+      
+      if (savedQuery) setQuery(savedQuery);
+      if (savedCategory) setActiveCategory(savedCategory as CategoryId);
+      if (savedResults) setResults(JSON.parse(savedResults));
+    } catch (e) {
+      console.error(e);
+    }
   }, [supabase.auth]);
+
+  // Sauvegarder la recherche pour ne pas la perdre lors de la connexion
+  useEffect(() => {
+    sessionStorage.setItem('wigo_search_query', query);
+    sessionStorage.setItem('wigo_search_category', activeCategory);
+    if (results) {
+      sessionStorage.setItem('wigo_search_results', JSON.stringify(results));
+    } else {
+      sessionStorage.removeItem('wigo_search_results');
+    }
+  }, [query, activeCategory, results]);
 
   const currentCat = CATEGORIES.find((c) => c.id === activeCategory);
   const headline = HEADLINES[activeCategory] || HEADLINES.hotels;
