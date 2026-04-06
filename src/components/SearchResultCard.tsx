@@ -34,7 +34,12 @@ export default function SearchResultCard({ hotel, isActive, onSelect }: SearchRe
         // Sécurité : Redirection vers Booking.com (l'utilisateur final gère ses dates et paye Booking)
         // plutôt que de prendre le paiement sur le propre compte Stripe de Wigo sans système d'inventaire
         const searchQuery = encodeURIComponent(hotel.name);
-        const bookingComUrl = `https://www.booking.com/searchresults.fr.html?ss=${searchQuery}`;
+        const affiliateId = process.env.NEXT_PUBLIC_BOOKING_AFFILIATE_ID;
+        let bookingComUrl = `https://www.booking.com/searchresults.fr.html?ss=${searchQuery}`;
+        
+        if (affiliateId) {
+            bookingComUrl += `&aid=${affiliateId}`;
+        }
         
         // Ouvrir dans un nouvel onglet
         window.open(bookingComUrl, '_blank');
