@@ -44,10 +44,10 @@ export default function SearchResultCard({ hotel, isActive, onSelect }: SearchRe
                 })
             });
             
-            // Handle unauthorized access (Clerk login check)
+            // Handle unauthorized access (Supabase login check)
             if (res.status === 401) {
-                // Redirect user to the sign-in page if they are not authenticated
-                window.location.href = '/sign-in?redirect_url=' + encodeURIComponent(window.location.pathname + window.location.search);
+                // Redirect user to the login page if they are not authenticated
+                window.location.href = '/login?redirect_url=' + encodeURIComponent(window.location.pathname + window.location.search);
                 return;
             }
 

@@ -2,26 +2,46 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { useState } from "react";
-import { SignInButton, SignedIn, SignedOut, UserButton } from "@clerk/nextjs";
-import { Compass, History, Zap, Plane, Menu, X } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Compass, History, Zap, Plane, Menu, X, LogOut, User as UserIcon } from "lucide-react";
 import { motion, useScroll, useMotionValueEvent, AnimatePresence } from "framer-motion";
+import { createClient } from "@/utils/supabase/client";
+import { type User } from "@supabase/supabase-js";
 
 export default function Navbar() {
   const { scrollY } = useScroll();
   const [scrolled, setScrolled] = useState(false);
   const [hidden, setHidden] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [user, setUser] = useState<User | null>(null);
+  const supabase = createClient();
+
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      setUser(user);
+    });
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user || null);
+    });
+
+    return () => subscription.unsubscribe();
+  }, [supabase.auth]);
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    window.location.href = "/";
+  };
 
   useMotionValueEvent(scrollY, "change", (latest) => {
     const previous = scrollY.getPrevious() || 0;
     if (latest > 50) {
       setScrolled(true);
       if (latest > previous && latest > 150) {
-        setHidden(true); // Hide on scroll down
+        setHidden(true);
         setMobileOpen(false);
       } else {
-        setHidden(false); // Show on scroll up
+        setHidden(false);
       }
     } else {
       setScrolled(false);
@@ -71,8 +91,8 @@ export default function Navbar() {
 
           {/* Auth + mobile toggle */}
           <div className="flex items-center gap-3">
-            <SignedOut>
-              <SignInButton mode="modal" fallbackRedirectUrl="/">
+            {!user ? (
+              <Link href="/login">
                 <button
                   className={`hidden md:inline-flex items-center gap-2 px-5 py-2 rounded-full text-sm font-bold transition-all ${
                     scrolled
@@ -82,12 +102,21 @@ export default function Navbar() {
                 >
                   Connexion
                 </button>
-              </SignInButton>
-            </SignedOut>
-
-            <SignedIn>
-              <UserButton afterSignOutUrl="/" appearance={{ elements: { avatarBox: scrolled ? "w-8 h-8" : "w-10 h-10 transition-all" } }} />
-            </SignedIn>
+              </Link>
+            ) : (
+              <div className="hidden md:flex items-center gap-3">
+                <Link href="/historique" className={`p-2 rounded-full flex items-center justify-center transition-colors ${scrolled ? "bg-black/5 hover:bg-black/10 dark:bg-white/5 dark:hover:bg-white/10" : "bg-white/10 hover:bg-white/20"} text-foreground`}>
+                  <UserIcon className="w-4 h-4" />
+                </Link>
+                <button 
+                  onClick={handleLogout}
+                  className={`p-2 rounded-full flex items-center justify-center transition-colors ${scrolled ? "bg-red-500/10 hover:bg-red-500/20 text-red-500" : "bg-white/10 hover:bg-red-500 text-white"} `}
+                  title="Déconnexion"
+                >
+                  <LogOut className="w-4 h-4" />
+                </button>
+              </div>
+            )}
 
             {/* Mobile menu toggle */}
             <button
@@ -126,19 +155,22 @@ export default function Navbar() {
               <MobileNavLink href="/historique" icon={<History className="w-5 h-5" />} label="Mes voyages" onClick={() => setMobileOpen(false)} />
               <MobileNavLink href="/pricing" icon={<Zap className="w-5 h-5" />} label="WIGO Pro" onClick={() => setMobileOpen(false)} accent />
               <div className="pt-3 border-t border-black/8 dark:border-white/10 mt-3">
-                <SignedOut>
-                  <SignInButton mode="modal" fallbackRedirectUrl="/">
+                {!user ? (
+                  <Link href="/login" onClick={() => setMobileOpen(false)}>
                     <button className="w-full py-3.5 bg-foreground text-background rounded-xl font-bold text-sm hover:scale-[1.02] transition-transform">
                       Connexion / Inscription
                     </button>
-                  </SignInButton>
-                </SignedOut>
-                <SignedIn>
-                  <div className="flex items-center gap-3 py-2 px-2 hover:bg-foreground/5 rounded-xl transition-colors cursor-pointer">
-                    <UserButton afterSignOutUrl="/" />
-                    <span className="text-sm font-medium text-foreground">Mon compte</span>
+                  </Link>
+                ) : (
+                  <div className="flex flex-col gap-2">
+                    <div className="flex items-center gap-3 py-2 px-2 rounded-xl text-sm font-medium text-foreground">
+                      <UserIcon className="w-5 h-5 opacity-60" /> Mon compte WIGO
+                    </div>
+                    <button onClick={handleLogout} className="w-full py-3 bg-red-500/10 text-red-500 rounded-xl font-bold text-sm hover:bg-red-500/20 transition-colors flex justify-center items-center gap-2">
+                      <LogOut className="w-4 h-4" /> Déconnexion
+                    </button>
                   </div>
-                </SignedIn>
+                )}
               </div>
             </motion.div>
           </motion.div>

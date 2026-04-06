@@ -158,6 +158,7 @@ function PackageContent() {
                    >
                       <div className="h-48 bg-slate-100 relative overflow-hidden">
                          {act.imageUrl ? (
+                           // eslint-disable-next-line @next/next/no-img-element
                            <img src={act.imageUrl} alt={act.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
                          ) : (
                            <div className="w-full h-full flex items-center justify-center text-slate-400">

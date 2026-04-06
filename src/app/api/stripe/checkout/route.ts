@@ -1,4 +1,4 @@
-import { auth } from '@clerk/nextjs/server';
+import { createClient } from '@/utils/supabase/server';
 import { NextResponse } from 'next/server';
 import Stripe from 'stripe';
 
@@ -8,9 +8,10 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY as string, {
 
 export async function POST() {
     try {
-        const { userId } = await auth();
+        const supabase = createClient();
+        const { data: { user } } = await supabase.auth.getUser();
 
-        if (!userId) {
+        if (!user) {
             return new NextResponse("Unauthorized", { status: 401 });
         }
 
@@ -42,7 +43,7 @@ export async function POST() {
                 }
             ],
             metadata: {
-                clerkUserId: userId,
+                supabaseUserId: user.id,
             },
         });
 

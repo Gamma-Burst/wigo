@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { auth } from '@clerk/nextjs/server';
+import { createClient } from '@/utils/supabase/server';
 import Stripe from 'stripe';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY as string, {
@@ -8,8 +8,10 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY as string, {
 
 export async function POST(req: Request) {
     try {
-        const { userId } = await auth();
-        if (!userId) {
+        const supabase = createClient();
+        const { data: { user } } = await supabase.auth.getUser();
+        
+        if (!user) {
             return NextResponse.json({ error: "Non autorisé" }, { status: 401 });
         }
 
@@ -47,8 +49,9 @@ export async function POST(req: Request) {
         });
 
         return NextResponse.json({ url: session.url });
-    } catch (error: any) {
-        console.error("Stripe Error Details:", error.message || error);
-        return NextResponse.json({ error: "Erreur Stripe: " + (error.message || "Unknown error") }, { status: 500 });
+    } catch (error: unknown) {
+        const err = error as Error;
+        console.error("Stripe Error Details:", err.message || err);
+        return NextResponse.json({ error: "Erreur Stripe: " + (err.message || "Unknown error") }, { status: 500 });
     }
 }

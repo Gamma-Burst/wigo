@@ -2,7 +2,8 @@
 
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { useUser, SignInButton } from "@clerk/nextjs";
+import Link from "next/link";
+import { createClient } from "@/utils/supabase/client";
 import CategoryTabs, { CATEGORIES, type CategoryId } from "./CategoryTabs";
 import ResultsGrid from "./ResultsGrid";
 import type { HotelResult } from "./SearchResultCard";
@@ -118,7 +119,6 @@ function ParticleCanvas() {
 
 // ─── Main Hero ────────────────────────────────────────────────────────────────
 export default function Hero() {
-  const { isSignedIn } = useUser();
   const router = useRouter();
   const [query, setQuery] = useState("");
   const [activeCategory, setActiveCategory] = useState<CategoryId>("magic");
@@ -126,6 +126,12 @@ export default function Hero() {
   const [msgIdx, setMsgIdx] = useState(0);
   const [results, setResults] = useState<(HotelResult | ActivityResult)[] | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const [isSignedIn, setIsSignedIn] = useState(false);
+  const supabase = createClient();
+
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data: { user } }) => setIsSignedIn(!!user));
+  }, [supabase.auth]);
 
   const currentCat = CATEGORIES.find((c) => c.id === activeCategory);
   const headline = HEADLINES[activeCategory] || HEADLINES.hotels;
@@ -272,13 +278,13 @@ export default function Hero() {
                         +{results!.length - 2} résultats masqués
                       </h3>
                       <p className="text-foreground/60 text-sm mb-6">
-                        Créez votre compte gratuit pour accéder à tous les résultats, sauvegarder vos favoris et utiliser l&apos;IA complète.
+                        Créez votre compte gratuit pour accéder à tous les résultats, sauvegarder vos favoris et utiliser l'IA complète.
                       </p>
-                      <SignInButton mode="modal">
+                      <Link href={`/login?redirect_url=${encodeURIComponent(window.location.pathname + window.location.search)}`}>
                         <button className="w-full btn-accent py-3.5 px-6 rounded-xl mb-3 text-sm">
                           🚀 Créer mon compte gratuit
                         </button>
-                      </SignInButton>
+                      </Link>
                       <div className="flex items-center justify-center gap-4 text-xs text-foreground/40">
                         <span>✓ Gratuit</span><span>·</span><span>✓ Sans CB</span><span>·</span><span>✓ 30 sec</span>
                       </div>

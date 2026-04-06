@@ -36,14 +36,14 @@ export async function POST(req: Request) {
 
     if (event.type === "checkout.session.completed") {
 
-        // We get the clerkUserId from the metadata we passed in the checkout
-        const clerkUserId = session.metadata?.clerkUserId;
+        // We get the supabaseUserId from the metadata we passed in the checkout
+        const supabaseUserId = session.metadata?.supabaseUserId;
 
-        if (clerkUserId) {
+        if (supabaseUserId) {
             // Find or create user, update PRO status
             await prisma.user.upsert({
                 where: {
-                    clerkUserId: clerkUserId,
+                    clerkUserId: supabaseUserId,
                 },
                 update: {
                     isPro: true,
@@ -51,9 +51,9 @@ export async function POST(req: Request) {
                     stripeCustomerId: session.customer as string,
                 },
                 create: {
-                    clerkUserId: clerkUserId,
-                    email: session.customer_details?.email || "unknown_email",
-                    name: session.customer_details?.name || "New Pro User",
+                    clerkUserId: supabaseUserId,
+                    email: session.customer_details?.email || "unknown@stripe.com",
+                    name: session.customer_details?.name || "WIGO Pro User",
                     isPro: true,
                     tier: "pro",
                     stripeCustomerId: session.customer as string,

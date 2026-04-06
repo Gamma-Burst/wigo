@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { SignInButton } from "@clerk/nextjs";
 import { Check, X, Zap, Crown, Lock } from "lucide-react";
 
 const FEATURES = [
@@ -81,11 +80,11 @@ export default function PricingPage() {
                             <span className="text-5xl font-black text-foreground">0€</span>
                             <span className="text-foreground/50 ml-2">pour toujours</span>
                         </div>
-                        <SignInButton mode="modal">
+                        <Link href="/login">
                             <button className="w-full border-2 border-foreground/20 hover:border-foreground/40 text-foreground font-bold py-4 rounded-2xl transition-all mb-6">
                                 Commencer gratuitement
                             </button>
-                        </SignInButton>
+                        </Link>
                         <ul className="space-y-3">
                             {FEATURES.map((f, i) => (
                                 <li key={i} className="flex items-center gap-3 text-sm">

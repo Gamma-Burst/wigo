@@ -1,4 +1,4 @@
-import { auth } from '@clerk/nextjs/server';
+import { createClient } from '@/utils/supabase/server';
 import { NextResponse } from 'next/server';
 import { PrismaClient } from '@prisma/client';
 
@@ -8,9 +8,10 @@ if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = prisma
 
 export async function POST(req: Request) {
     try {
-        const { userId } = await auth();
+        const supabase = createClient();
+        const { data: { user } } = await supabase.auth.getUser();
 
-        if (!userId) {
+        if (!user) {
             return new NextResponse("Unauthorized", { status: 401 });
         }
 
@@ -22,12 +23,12 @@ export async function POST(req: Request) {
         }
 
         // First, ensure the User exists in our DB (they might have just signed up via Clerk)
-        const user = await prisma.user.upsert({
-            where: { clerkUserId: userId },
+        const dbUser = await prisma.user.upsert({
+            where: { clerkUserId: user.id },
             update: {},
             create: {
-                clerkUserId: userId,
-                email: "placeholder@clerk.com", // In a real app, fetch email from Clerk user obj
+                clerkUserId: user.id,
+                email: user.email || "placeholder@supabase.com", // In a real app, fetch email from Clerk user obj
                 name: "WIGO User",
             }
         });
@@ -35,7 +36,7 @@ export async function POST(req: Request) {
         // Check if church already saved
         const existingSave = await prisma.savedHotel.findFirst({
             where: {
-                userId: user.id,
+                userId: dbUser.id,
                 hotelId: hotelId.toString()
             }
         });

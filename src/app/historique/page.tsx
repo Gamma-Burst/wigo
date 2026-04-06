@@ -1,4 +1,4 @@
-import { auth } from "@clerk/nextjs/server";
+import { createClient } from "@/utils/supabase/server";
 import { PrismaClient } from '@prisma/client'
 
 const globalForPrisma = global as unknown as { prisma: PrismaClient }
@@ -10,21 +10,22 @@ import { GroupedHistory } from "./types";
 import HistoryClientRender from "./HistoryClient";
 
 export default async function HistoryPage() {
-    const { userId } = await auth();
+    const supabase = createClient();
+    const { data: { user } } = await supabase.auth.getUser();
 
     try {
         // 1. Fetch user to check pro status
-        const user = await prisma.user.findUnique({
-            where: { clerkUserId: userId || "" }
+        const dbUser = await prisma.user.findUnique({
+            where: { clerkUserId: user?.id || "" }
         });
 
-        const isPro = user?.isPro || false;
+        const isPro = dbUser?.isPro || false;
 
         // 2. Fetch Saved Hotels
         const savedHotels = await prisma.savedHotel.findMany({
             where: {
                 user: {
-                    clerkUserId: userId || ""
+                    clerkUserId: user?.id || ""
                 }
             },
             orderBy: {
