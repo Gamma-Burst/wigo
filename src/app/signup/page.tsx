@@ -1,8 +1,8 @@
-import { login } from './actions'
+import { signup } from '@/app/login/actions'
 import Link from 'next/link'
 import Image from 'next/image'
 
-export default function LoginPage({
+export default function SignupPage({
   searchParams,
 }: {
   searchParams: { message: string, redirect_url?: string }
@@ -28,9 +28,9 @@ export default function LoginPage({
           </Link>
         </div>
 
-        <h1 className="text-2xl font-black text-center mb-2">Bienvenue sur WIGO</h1>
+        <h1 className="text-2xl font-black text-center mb-2">Rejoindre WIGO</h1>
         <p className="text-center text-sm text-foreground/60 mb-8">
-          Découvrez la nouvelle façon de voyager avec l&apos;IA.
+          Créez votre compte gratuit pour sauvegarder vos séjours.
         </p>
 
         <form className="flex flex-col gap-4 text-sm w-full">
@@ -39,6 +39,18 @@ export default function LoginPage({
               {searchParams.message}
             </div>
           )}
+
+          <div className="flex flex-col gap-1.5">
+            <label className="font-bold text-foreground/80 pl-1" htmlFor="name">
+              Prénom
+            </label>
+            <input
+              className="px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-foreground focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent transition-all"
+              name="name"
+              placeholder="ex: Jean"
+              required
+            />
+          </div>
 
           <div className="flex flex-col gap-1.5">
             <label className="font-bold text-foreground/80 pl-1" htmlFor="email">
@@ -62,24 +74,25 @@ export default function LoginPage({
               name="password"
               placeholder="••••••••"
               required
+              minLength={6}
             />
           </div>
 
           <input type="hidden" name="redirect_url" value={searchParams.redirect_url || '/'} />
 
           <button
-            formAction={login}
-            className="w-full bg-foreground text-background font-bold py-3.5 rounded-xl hover:scale-[1.02] active:scale-95 transition-all shadow-lg mt-2"
+            formAction={signup}
+            className="w-full bg-accent text-white font-bold py-3.5 rounded-xl hover:scale-[1.02] active:scale-95 transition-all shadow-lg mt-2"
           >
-            Se Connecter
+            S&apos;inscrire gratuitement
           </button>
         </form>
 
         <div className="mt-6 text-center">
-          <p className="text-sm text-foreground/60 mb-3">Pas encore de compte ?</p>
-          <Link href={`/signup${searchParams.redirect_url ? '?redirect_url=' + encodeURIComponent(searchParams.redirect_url) : ''}`}>
-            <button className="w-full bg-accent text-white font-bold py-3.5 rounded-xl hover:scale-[1.02] active:scale-95 transition-all shadow-lg">
-              S&apos;inscrire
+          <p className="text-sm text-foreground/60 mb-3">Déjà inscrit ?</p>
+          <Link href={`/login${searchParams.redirect_url ? '?redirect_url=' + encodeURIComponent(searchParams.redirect_url) : ''}`}>
+            <button className="w-full bg-foreground text-background font-bold py-3.5 rounded-xl hover:scale-[1.02] active:scale-95 transition-all shadow-lg">
+              Se Connecter
             </button>
           </Link>
         </div>

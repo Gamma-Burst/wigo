@@ -31,6 +31,8 @@ export async function signup(formData: FormData) {
     email: formData.get('email') as string,
     password: formData.get('password') as string,
   }
+  
+  const name = formData.get('name') as string
 
   const origin = process.env.NEXT_PUBLIC_SITE_URL 
     ? process.env.NEXT_PUBLIC_SITE_URL 
@@ -42,11 +44,12 @@ export async function signup(formData: FormData) {
     ...data,
     options: {
       emailRedirectTo: `${origin}/auth/callback`,
+      data: name ? { name } : undefined,
     },
   })
 
   if (error) {
-    redirect('/login?message=' + encodeURIComponent(error.message))
+    redirect('/signup?message=' + encodeURIComponent(error.message))
   }
 
   revalidatePath('/', 'layout')

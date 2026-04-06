@@ -280,7 +280,7 @@ export default function Hero() {
                       <p className="text-foreground/60 text-sm mb-6">
                         Créez votre compte gratuit pour accéder à tous les résultats, sauvegarder vos favoris et utiliser l&apos;IA complète.
                       </p>
-                      <Link href={`/login?redirect_url=${encodeURIComponent(window.location.pathname + window.location.search)}`}>
+                      <Link href={`/signup?redirect_url=${encodeURIComponent(window.location.pathname + window.location.search)}`}>
                         <button className="w-full btn-accent py-3.5 px-6 rounded-xl mb-3 text-sm">
                           🚀 Créer mon compte gratuit
                         </button>
