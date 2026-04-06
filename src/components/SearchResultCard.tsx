@@ -43,10 +43,24 @@ export default function SearchResultCard({ hotel, isActive, onSelect }: SearchRe
                     imageUrl: hotel.imageUrl
                 })
             });
+            
+            // Handle unauthorized access (Clerk login check)
+            if (res.status === 401) {
+                // Redirect user to the sign-in page if they are not authenticated
+                window.location.href = '/sign-in?redirect_url=' + encodeURIComponent(window.location.pathname + window.location.search);
+                return;
+            }
+
             const data = await res.json();
-            if (data.url) window.location.href = data.url;
-        } catch {
-            setLoading(false);
+            if (data.url) {
+                window.location.href = data.url;
+            } else {
+                console.error("Booking error:", data.error);
+                setLoading(false); // Reset loading state if no URL is returned
+            }
+        } catch (error) {
+            console.error("Network error during booking:", error);
+            setLoading(false); // Ensure button doesn't get stuck forever
         }
     };
 
