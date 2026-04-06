@@ -1,6 +1,7 @@
 "use client";
 
 import { Plane, Clock, Luggage, ExternalLink } from "lucide-react";
+import { motion } from "framer-motion";
 
 export interface FlightResult {
   id: string;
@@ -87,11 +88,15 @@ export default function FlightResultCard({ flight, onSelect, isSelected }: Fligh
   };
 
   return (
-    <div
+    <motion.div
+      initial={{ opacity: 0, scale: 0.98, y: 15 }}
+      animate={{ opacity: 1, scale: 1, y: 0 }}
+      whileHover={{ y: -4, scale: 1.01 }}
+      transition={{ duration: 0.3 }}
       onClick={onSelect}
-      className={`group bg-white dark:bg-[#141412] rounded-2xl overflow-hidden transition-all duration-400 cursor-pointer card-3d-subtle border ${isSelected
-          ? "border-accent/50 shadow-[0_0_30px_-5px_rgba(232,101,42,0.3)] scale-[1.01]"
-          : "border-foreground/[0.06] hover:border-accent/20"
+      className={`group bg-white dark:bg-[#141412] rounded-2xl overflow-hidden transition-all duration-400 cursor-pointer card-3d border ${isSelected
+          ? "border-accent/50 shadow-[0_0_30px_-5px_rgba(232,101,42,0.3)]"
+          : "border-foreground/[0.06] hover:border-accent/30 hover:shadow-xl"
         }`}
     >
       <div className="p-5">
@@ -188,6 +193,6 @@ export default function FlightResultCard({ flight, onSelect, isSelected }: Fligh
           </a>
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 }

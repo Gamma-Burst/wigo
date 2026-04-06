@@ -5,7 +5,7 @@
 
 import { HotelResult } from "@/components/SearchResultCard";
 import { SearchFilters } from "./ai-filters";
-import { amadeusGet, amadeusPost, getDefaultCheckIn, getDefaultCheckOut } from "./amadeus-client";
+import { amadeusGet, getDefaultCheckIn, getDefaultCheckOut } from "./amadeus-client";
 
 const HOTEL_MARKUP = 1.15; // Marge de 15% pour WIGO
 
@@ -92,9 +92,9 @@ export interface EnhancedHotelResult extends HotelResult {
   hotelRating?: number;
 }
 
-async function getHotelIds(cityCode: string): Promise<string[]> {
-  const result = await amadeusGet<AmadeusHotelListItem>("/v1/reference-data/locations/hotels/by-city", {
-    cityCode, radius: 20, radiusUnit: "KM", ratings: "3,4,5", hotelSource: "ALL"
+async function getHotelIds(lat: number, lng: number): Promise<string[]> {
+  const result = await amadeusGet<AmadeusHotelListItem>("/v1/reference-data/locations/hotels/by-geocode", {
+    latitude: lat, longitude: lng, radius: 20, radiusUnit: "KM", ratings: "3,4,5", hotelSource: "ALL"
   });
   return result?.data?.slice(0, 30).map((h) => h.hotelId).filter(Boolean) || [];
 }
@@ -140,15 +140,26 @@ async function getHotelOffers(hotelIds: string[], checkIn?: string, checkOut?: s
 }
 
 export async function searchHotels(filters: SearchFilters): Promise<EnhancedHotelResult[]> {
-  const cityCode = filters.iataCode || getCityIata(filters.location);
-  if (cityCode) {
-    const ids = await getHotelIds(cityCode);
+  let lat = filters.latitude;
+  let lng = filters.longitude;
+
+  // Si l'IA ne renvoie pas de latitude/longitude, utilise le fallback local (cities dictionary)
+  if (!lat || !lng) {
+    const coords = getCoords(filters.location);
+    lat = coords.lat;
+    lng = coords.lng;
+  }
+
+  if (lat && lng) {
+    const ids = await getHotelIds(lat, lng);
     if (ids.length > 0) return await getHotelOffers(ids, filters.checkIn, filters.checkOut, filters.guests);
   }
   return [];
 }
 
 // Fonctions de secours pour le build
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export async function getHotelRatings(hotelIds: string[]): Promise<unknown[]> { return []; }
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export async function bookHotel(request: unknown): Promise<unknown> { return { success: true }; }
 export { getCoords as getCoordsForCity };

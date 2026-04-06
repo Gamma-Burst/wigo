@@ -1,6 +1,6 @@
 "use client";
 
-export type CategoryId = "hotels" | "flights" | "hiking" | "events" | "restaurants" | "culture" | "attractions" | "nature" | "markets";
+export type CategoryId = "magic" | "hotels" | "flights" | "hiking" | "events" | "restaurants" | "culture" | "attractions" | "nature" | "markets";
 
 export interface Category {
     id: CategoryId;
@@ -10,6 +10,7 @@ export interface Category {
 }
 
 export const CATEGORIES: Category[] = [
+    { id: "magic", label: "Passeport WIGO", emoji: "✨", placeholder: "Emmène-moi au chaud pour mon budget de 500€..." },
     { id: "hotels", label: "Hôtels", emoji: "🏨", placeholder: "Hotel spa à Bruxelles 2 personnes..." },
     { id: "flights", label: "Vols", emoji: "✈️", placeholder: "Vol Paris Barcelone pas cher..." },
     { id: "hiking", label: "Randos", emoji: "🥾", placeholder: "Sentier facile en famille près de Liège..." },

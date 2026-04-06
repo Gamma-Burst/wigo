@@ -1,0 +1,7 @@
+# WIGO — AI-Powered Travel Search
+User-agent: *
+Allow: /
+Disallow: /api/
+Disallow: /historique
+
+Sitemap: https://nomadic-henna.vercel.app/sitemap.xml

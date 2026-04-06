@@ -37,6 +37,8 @@ export async function POST(req: NextRequest) {
 
             searchParams = {
                 location: fallbackLocation,
+                iataCode: "",
+                locationDisplay: fallbackLocation,
                 guests: 2,
                 amenities: []
             };

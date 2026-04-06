@@ -7,10 +7,12 @@ import CategoryTabs, { CATEGORIES, type CategoryId } from "./CategoryTabs";
 import ResultsGrid from "./ResultsGrid";
 import type { HotelResult } from "./SearchResultCard";
 import type { ActivityResult } from "@/app/api/search-activities/route";
-import { Search, Sparkles, ArrowRight } from "lucide-react";
+import { Sparkles, ArrowRight } from "lucide-react";
+import { motion } from "framer-motion";
 
 // ─── Category headlines ───────────────────────────────────────────────────────
 const HEADLINES: Record<string, { line1: string; line2: string; sub: string }> = {
+  magic:       { line1: "Votre évasion", line2: "créée par l'IA", sub: "Décrivez l'escapade de vos rêves. WIGO assemble le vol, l'hôtel et l'activité parfaite en un clin d'œil." },
   hotels:      { line1: "L'hôtel parfait,", line2: "trouvé en 3 secondes", sub: "Décrivez votre envie, l'IA trouve le bon plan parmi 150 000 hébergements." },
   flights:     { line1: "Le vol idéal,", line2: "au meilleur prix", sub: "Comparez toutes les compagnies aériennes en temps réel avec Amadeus." },
   hiking:      { line1: "Les plus beaux sentiers", line2: "d'Europe vous attendent", sub: "Randonnées guidées par l'IA selon votre niveau et votre région." },
@@ -119,7 +121,7 @@ export default function Hero() {
   const { isSignedIn } = useUser();
   const router = useRouter();
   const [query, setQuery] = useState("");
-  const [activeCategory, setActiveCategory] = useState<CategoryId>("hotels");
+  const [activeCategory, setActiveCategory] = useState<CategoryId>("magic");
   const [isSearching, setIsSearching] = useState(false);
   const [msgIdx, setMsgIdx] = useState(0);
   const [results, setResults] = useState<(HotelResult | ActivityResult)[] | null>(null);
@@ -145,7 +147,10 @@ export default function Hero() {
     setMsgIdx(0);
 
     try {
-      if (activeCategory === "hotels") {
+      if (activeCategory === "magic") {
+        router.push("/package?q=" + encodeURIComponent(q));
+        return; // Navigation handled by next/navigation
+      } else if (activeCategory === "hotels") {
         const res = await fetch("/api/search", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -329,38 +334,63 @@ export default function Hero() {
         </div>
 
         {/* Headline */}
-        <div className="animate-slide-up delay-100">
-          <h1 className="font-display text-5xl md:text-7xl lg:text-[82px] font-extrabold text-white leading-[1.05] tracking-tight mb-4">
+        <motion.div 
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, ease: "easeOut" }}
+          key={headline.line1}
+        >
+          <h1 className="font-display text-5xl md:text-7xl lg:text-[82px] font-extrabold text-white leading-[1.05] tracking-tight mb-4 drop-shadow-2xl">
             {headline.line1}
             <br />
             <span className="gradient-text text-glow">{headline.line2}</span>
           </h1>
-        </div>
+        </motion.div>
 
         {/* Subtitle */}
-        <p className="text-white/55 text-lg md:text-xl max-w-2xl mx-auto mb-10 animate-slide-up delay-200 leading-relaxed">
+        <motion.p 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, delay: 0.2, ease: "easeOut" }}
+          className="text-white/60 text-lg md:text-xl max-w-2xl mx-auto mb-10 leading-relaxed font-light"
+        >
           {headline.sub}
-        </p>
+        </motion.p>
 
         {/* Category tabs */}
-        <div className="w-full mb-6 animate-slide-up delay-200">
+        <motion.div 
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.6, delay: 0.3 }}
+          className="w-full mb-8 relative z-20"
+        >
           <CategoryTabs
             active={activeCategory}
             onChange={(id) => { if (id === "flights") { router.push("/vols"); return; } setActiveCategory(id); setResults(null); }}
           />
-        </div>
+        </motion.div>
 
-        {/* Search bar */}
-        <div className="w-full max-w-3xl mx-auto animate-slide-up delay-300">
-          <form
+        {/* Magic Search bar */}
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.4 }}
+          className="w-full max-w-3xl mx-auto relative z-30"
+        >
+          <motion.form
             onSubmit={(e) => handleSearch(e)}
-            className="relative flex items-center bg-white/[0.07] backdrop-blur-2xl border border-white/[0.12] rounded-2xl p-2 shadow-2xl shadow-black/40 transition-all duration-500 focus-within:border-accent/30 focus-within:shadow-accent/10 focus-within:shadow-[0_0_60px_-15px_rgba(232,101,42,0.3)]"
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            className="relative flex items-center bg-white/[0.04] backdrop-blur-2xl border border-white/[0.1] rounded-2xl p-2.5 shadow-[0_8px_32px_rgba(0,0,0,0.5)] transition-all duration-300 focus-within:border-accent/40 focus-within:shadow-[0_0_60px_-15px_rgba(232,101,42,0.4)] focus-within:bg-white/[0.08] overflow-hidden group"
           >
-            <div className="flex items-center flex-grow px-3 gap-3">
+            {/* Shimmer effect inside search bar */}
+            <div className="absolute inset-0 -translate-x-[150%] animate-[shimmer_3s_infinite] bg-gradient-to-r from-transparent via-white/[0.05] to-transparent pointer-events-none group-hover:translate-x-[150%] transition-transform duration-1000" />
+            
+            <div className="flex items-center flex-grow px-4 gap-4 relative z-10">
               {isSearching ? (
-                <div className="w-5 h-5 border-2 border-accent border-t-transparent rounded-full animate-spin flex-shrink-0" />
+                <div className="w-6 h-6 border-2 border-accent border-t-transparent rounded-full animate-spin flex-shrink-0 drop-shadow-glow" />
               ) : (
-                <Search className="w-5 h-5 text-white/40 flex-shrink-0" />
+                <Sparkles className="w-6 h-6 text-accent/80 flex-shrink-0 animate-pulse" />
               )}
               <input
                 ref={inputRef}
@@ -368,20 +398,20 @@ export default function Hero() {
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 disabled={isSearching}
-                placeholder={currentCat?.placeholder || "Décrivez votre envie..."}
-                className="w-full bg-transparent text-white placeholder-white/35 text-base md:text-lg py-3 outline-none caret-accent"
+                placeholder={currentCat?.placeholder || "Demandez-moi n'importe quoi..."}
+                className="w-full bg-transparent text-white placeholder-white/40 text-lg md:text-xl py-4 flex-grow outline-none caret-accent font-medium tracking-wide"
               />
             </div>
             <button
               type="submit"
               disabled={isSearching || !query.trim()}
-              className="btn-accent flex items-center gap-2 px-6 py-3.5 rounded-xl text-sm disabled:opacity-40 disabled:cursor-not-allowed flex-shrink-0"
+              className="relative overflow-hidden btn-accent flex items-center justify-center gap-2 px-8 py-4 rounded-xl text-base font-bold disabled:opacity-40 disabled:cursor-not-allowed flex-shrink-0 transition-all hover:shadow-[0_0_20px_rgba(232,101,42,0.5)] group/btn"
             >
-              <span>{currentCat?.emoji}</span>
-              <span className="hidden sm:inline">Explorer</span>
-              <ArrowRight className="w-4 h-4" />
+              <div className="absolute inset-0 bg-white/20 translate-y-full group-hover/btn:translate-y-0 transition-transform duration-300 ease-out" />
+              <span className="relative z-10 hidden sm:inline text-white">Créer la magie</span>
+              <ArrowRight className="w-5 h-5 relative z-10 text-white group-hover/btn:translate-x-1 transition-transform" />
             </button>
-          </form>
+          </motion.form>
 
           {/* Quick suggestions */}
           <div className="flex flex-wrap gap-2 justify-center mt-4">
@@ -398,24 +428,30 @@ export default function Hero() {
               </button>
             ))}
           </div>
-        </div>
+        </motion.div>
 
         {/* Stats */}
-        <div className="flex flex-wrap items-center justify-center gap-10 mt-16 animate-slide-up delay-400">
+        <motion.div 
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.8 }}
+          className="flex flex-wrap items-center justify-center gap-10 mt-16 delay-400"
+        >
           {[
             ["150 000+", "Hébergements", "🏨"],
             ["500+", "Compagnies aériennes", "✈️"],
             ["50 000+", "Activités", "🎯"],
             ["IA", "Gemini 2.0", "🧠"],
           ].map(([val, label, emoji]) => (
-            <div key={label} className="text-center group cursor-default">
+            <motion.div key={label} className="text-center group cursor-default">
               <div className="font-display text-2xl font-bold text-white group-hover:text-accent transition-colors duration-300">
                 <span className="mr-1.5 opacity-60">{emoji}</span>{val}
               </div>
               <div className="text-xs text-white/35 mt-1 group-hover:text-white/50 transition-colors">{label}</div>
-            </div>
+            </motion.div>
           ))}
-        </div>
+        </motion.div>
       </div>
 
       {/* Scroll indicator */}

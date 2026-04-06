@@ -261,13 +261,36 @@ export default function VolsPage() {
         <div className="relative z-10 bg-background min-h-[50vh]">
           <div className="max-w-5xl mx-auto px-4 py-10">
             {isSearching ? (
-              <div className="text-center py-24">
-                <div className="relative w-16 h-16 mx-auto mb-6">
-                  <div className="absolute inset-0 border-4 border-accent/20 rounded-full" />
-                  <div className="absolute inset-0 border-4 border-accent border-t-transparent rounded-full animate-spin" />
-                  <Sparkles className="absolute inset-0 m-auto w-6 h-6 text-accent" />
+              <div className="space-y-4 animate-fade-in w-full max-w-3xl mx-auto">
+                <div className="flex items-center gap-3 mb-8 justify-center">
+                  <Sparkles className="w-5 h-5 text-accent animate-pulse" />
+                  <p className="text-foreground/60 font-medium">Recherche des meilleurs vols et itinéraires en cours...</p>
                 </div>
-                <p className="text-foreground/60 font-medium animate-pulse">Recherche des meilleurs vols en cours...</p>
+                {[1, 2, 3].map((i) => (
+                  <div key={i} className="bg-white dark:bg-[#141412] rounded-2xl border border-foreground/[0.06] p-5 w-full">
+                    <div className="flex justify-between mb-6">
+                      <div className="flex gap-3 items-center">
+                        <div className="w-9 h-9 rounded-xl skeleton" />
+                        <div className="space-y-2">
+                          <div className="w-24 h-4 rounded skeleton" />
+                          <div className="w-16 h-3 rounded skeleton" />
+                        </div>
+                      </div>
+                      <div className="space-y-2 flex flex-col items-end">
+                        <div className="w-20 h-6 rounded skeleton" />
+                        <div className="w-12 h-3 rounded skeleton" />
+                      </div>
+                    </div>
+                    <div className="flex gap-6 items-center px-2">
+                      <div className="w-12 h-8 rounded skeleton" />
+                      <div className="flex-grow flex flex-col gap-2 items-center">
+                        <div className="w-16 h-3 rounded skeleton" />
+                        <div className="w-full h-0.5 rounded skeleton" />
+                      </div>
+                      <div className="w-12 h-8 rounded skeleton" />
+                    </div>
+                  </div>
+                ))}
               </div>
             ) : results && results.length === 0 ? (
               <div className="text-center py-24">

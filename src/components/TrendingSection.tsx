@@ -21,6 +21,14 @@ interface TrendingItem {
 }
 
 const TRENDING_DATA: Record<CategoryId, TrendingItem[]> = {
+    magic: [
+        { id: "mg1", name: "Évasion Ardennes 3 jours", location: "Belgique", image: "https://images.unsplash.com/photo-1518780664697-55e3ad937233?w=800&q=80", rating: 4.9, likes: 5421, bookings: 3210, tag: "✨ IA Pick", price: "À partir de 299€" },
+        { id: "mg2", name: "Weekend Romantique Bruges", location: "Bruges, Belgique", image: "https://images.unsplash.com/photo-1467269204594-9661b134dd2b?w=800&q=80", rating: 4.8, likes: 4567, bookings: 2345, tag: "Coup de cœur", price: "À partir de 189€" },
+        { id: "mg3", name: "Aventure Nature & Spa", location: "Spa, Belgique", image: "https://images.unsplash.com/photo-1470252649378-9c29740c9fa8?w=800&q=80", rating: 4.7, likes: 3456, bookings: 1876, tag: "Détente", price: "À partir de 159€" },
+        { id: "mg4", name: "Culture & Gastronomie Bruxelles", location: "Bruxelles, Belgique", image: "https://images.unsplash.com/photo-1559113513-d5e96a3ef98e?w=800&q=80", rating: 4.8, likes: 6789, bookings: 4321, tag: "🔥 Tendance", price: "À partir de 129€" },
+        { id: "mg5", name: "Escapade Côte Belge", location: "Ostende, Belgique", image: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=800&q=80", rating: 4.6, likes: 2345, bookings: 1234, tag: "Plage", price: "À partir de 99€" },
+        { id: "mg6", name: "Road Trip Wallonie", location: "Wallonie, Belgique", image: "https://images.unsplash.com/photo-1551632811-561732d1e306?w=800&q=80", rating: 4.7, likes: 3210, bookings: 1543, tag: "Aventure", price: "À partir de 249€" },
+    ],
     hotels: [
         { id: "h1", name: "L'Hôtel Amigo", location: "Bruxelles, Belgique", image: "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800&q=80", rating: 4.9, likes: 2847, bookings: 1203, tag: "Coup de cœur", price: "À partir de 189€" },
         { id: "h2", name: "Château-Hôtel d'Hassonville", location: "Marche-en-Famenne, Belgique", image: "https://images.unsplash.com/photo-1590490360182-c33d57733427?w=800&q=80", rating: 4.8, likes: 1923, bookings: 876, tag: "Romanesque", price: "À partir de 145€" },
@@ -96,6 +104,7 @@ const TRENDING_DATA: Record<CategoryId, TrendingItem[]> = {
 };
 
 const SECTION_TITLES: Record<CategoryId, string> = {
+    magic: "Les évasions les plus populaires",
     hotels: "Les hôtels les plus réservés",
     flights: "Les vols les plus recherchés",
     hiking: "Les sentiers les plus parcourus",

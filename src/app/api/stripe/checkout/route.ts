@@ -33,7 +33,7 @@ export async function POST() {
                             name: 'WIGO Pro',
                             description: 'Accédez à toutes les recherches IA et lieux secrets en illimité.',
                         },
-                        unit_amount: 499, // 4.99€ en centimes
+                        unit_amount: 999, // 9.99€ en centimes (correspond à la page pricing)
                         recurring: {
                             interval: 'month'
                         }

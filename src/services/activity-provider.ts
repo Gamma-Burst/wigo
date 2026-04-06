@@ -97,9 +97,13 @@ export async function searchActivities(
     id: act.id,
     name: act.name,
     description: act.shortDescription || act.description || "",
-    price: act.price ? `${Math.round(parseFloat(act.price.amount))}€` : "Prix sur demande",
+    price: act.price && act.price.amount && !isNaN(parseFloat(act.price.amount)) 
+      ? `${Math.round(parseFloat(act.price.amount))}€` 
+      : "Prix sur demande",
     currency: act.price?.currencyCode || "EUR",
-    priceNum: act.price ? parseFloat(act.price.amount) : 0,
+    priceNum: act.price && act.price.amount && !isNaN(parseFloat(act.price.amount)) 
+      ? parseFloat(act.price.amount) 
+      : 0,
     imageUrl: act.pictures?.[0] || "",
     rating: act.rating ? parseFloat(act.rating) : 4.0 + Math.random() * 0.8,
     duration: act.minimumDuration || "",

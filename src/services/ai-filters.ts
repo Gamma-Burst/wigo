@@ -1,13 +1,15 @@
-﻿import { GoogleGenerativeAI } from "@google/generative-ai";
+import OpenAI from "openai";
 
-const genAI = process.env.GOOGLE_API_KEY
-    ? new GoogleGenerativeAI(process.env.GOOGLE_API_KEY)
+const openai = process.env.OPENAI_API_KEY
+    ? new OpenAI({ apiKey: process.env.OPENAI_API_KEY })
     : null;
 
 export interface SearchFilters {
     location: string;
     iataCode: string;
     locationDisplay: string;
+    latitude?: number;
+    longitude?: number;
     guests: number;
     max_price?: number;
     type?: string;
@@ -27,31 +29,43 @@ export async function extractFilters(query: string): Promise<SearchFilters | nul
         };
     };
 
-    if (!genAI) return simpleExtract();
+    if (!openai) {
+        console.error("[AI] OPENAI_API_KEY manquant ! Fallback activé.");
+        return simpleExtract();
+    }
 
     try {
-        const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
+        console.log("[AI] Analyse NLP via OpenAI pour :", query);
 
-        const prompt = `Tu es l'expert voyage de WIGO. Transforme la requête en JSON. 
-RETOURNE UNIQUEMENT DU JSON.
+        const prompt = `Tu es l'expert voyage de WIGO. Transforme la requête de l'utilisateur en JSON strict.
+RETOURNE UNIQUEMENT DU JSON, sans texte additionnel ni block (pas de \`\`\`json).
 
 RÈGLES DE DESTINATION :
-- "location": Nom de la ville.
-- "iataCode": Code IATA de 3 lettres (EX: Porto = OPO, Paris = PAR, Lisbonne = LIS).
-- "locationDisplay": Format "Ville (IATA)" (EX: "Porto (OPO)").
-- SI l'utilisateur donne un pays (ex: Portugal), choisis la capitale (Lisbonne, LIS).
-- IMPORTANT: Pour Porto, utilise OPO (JAMAIS POR).
+- "location": Nom précis de la ville, du village ou du lieu (EX: Maredsous, Rome, Tokyo).
+- "iataCode": Code aéroport IATA 3 lettres le plus proche (EX: Maredsous -> CRL, Rome -> ROM).
+- "locationDisplay": Format "Lieu (Pays)" (EX: "Maredsous (Belgique)").
+- "latitude": Coordonnée géolocalisée précise de latitude absolue (Nombre).
+- "longitude": Coordonnée géolocalisée précise de longitude absolue (Nombre).
+IMPORTANT : Tu DOIS fournir les coordonnées géographiques (latitude et longitude) exactes pour le lieu demandé, même s'il s'agit d'un petit village comme Maredsous.
 
 Requête: "${query}"`;
 
-        const result = await model.generateContent(prompt);
-        const text = result.response.text().replace(/```json\s*/g, "").replace(/```\s*/g, "").trim();
+        const completion = await openai.chat.completions.create({
+            messages: [{ role: "system", content: prompt }],
+            model: "gpt-4o-mini",
+            response_format: { type: "json_object" },
+            temperature: 0.1
+        });
+
+        const text = completion.choices[0]?.message?.content?.trim() || "{}";
         const parsed = JSON.parse(text);
 
         return {
             location: parsed.location || "Lisbonne",
             iataCode: (parsed.iataCode || "LIS").toUpperCase(),
             locationDisplay: parsed.locationDisplay || "Lisbonne (LIS)",
+            latitude: parsed.latitude,
+            longitude: parsed.longitude,
             guests: parsed.guests || 2,
             amenities: parsed.amenities || [],
             max_price: parsed.max_price,
@@ -61,7 +75,7 @@ Requête: "${query}"`;
         } as SearchFilters;
 
     } catch (error) {
-        console.error("Gemini error:", error);
+        console.error("OpenAI error:", error);
         return simpleExtract();
     }
 }

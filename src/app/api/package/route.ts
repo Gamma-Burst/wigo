@@ -1,0 +1,77 @@
+import { NextRequest, NextResponse } from "next/server";
+import { extractFilters } from "@/services/ai-filters";
+import { searchHotels } from "@/services/hotel-provider";
+import { searchFlights } from "@/services/flight-provider";
+import { searchActivities } from "@/services/activity-provider";
+
+export const dynamic = "force-dynamic";
+
+export async function POST(req: NextRequest) {
+  try {
+    let body;
+    try {
+      body = await req.json();
+    } catch {
+      return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
+    }
+
+    const { query } = body as { query: string };
+    if (!query) return NextResponse.json({ error: "Missing query" }, { status: 400 });
+
+    // 1. Extract intents using Gemini
+    const filters = await extractFilters(query);
+    if (!filters) {
+      return NextResponse.json({ error: "AI extraction failed" }, { status: 500 });
+    }
+
+    // Prepare default dates for flights if none provided
+    const nextMonth = new Date();
+    nextMonth.setMonth(nextMonth.getMonth() + 1);
+    const departDate = filters.checkIn || nextMonth.toISOString().split("T")[0];
+
+    let returnDate = filters.checkOut;
+    if (!returnDate) {
+      const returnDateObj = new Date(departDate);
+      returnDateObj.setDate(returnDateObj.getDate() + 3);
+      returnDate = returnDateObj.toISOString().split("T")[0];
+    }
+
+    // 2. Fetch all components of the Package asynchronously
+    const [hotels, flights, activities] = await Promise.all([
+      // Hotels
+      searchHotels(filters).catch(() => []),
+
+      // Flights (Defaulting origin to BRU for Belgian market)
+      searchFlights({
+        origin: "BRU",
+        destination: filters.iataCode || "LIS",
+        departDate,
+        returnDate,
+        adults: filters.guests || 2,
+      }).catch(() => []),
+
+      // Activities
+      (async () => {
+        if (filters.latitude && filters.longitude) {
+          return searchActivities(filters.latitude, filters.longitude).catch(() => []);
+        }
+        return [];
+      })(),
+    ]);
+
+    // 3. Return the WIGO Passport payload
+    return NextResponse.json({
+      passport: {
+        destination: filters.locationDisplay,
+        intent: query,
+        hotels: hotels.slice(0, 3), // Top 3
+        flights: flights.slice(0, 3), // Top 3
+        activities: activities.slice(0, 3) // Top 3
+      }
+    });
+
+  } catch (error) {
+    console.error("[PACKAGE_API_ERROR]", error);
+    return NextResponse.json({ error: "Internal Error" }, { status: 500 });
+  }
+}

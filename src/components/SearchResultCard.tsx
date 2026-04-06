@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { Zap, ArrowRight, Star } from "lucide-react";
 import { useState } from "react";
+import { motion } from "framer-motion";
 import { EnhancedHotelResult } from "@/services/hotel-provider";
 
 export interface HotelResult {
@@ -50,13 +51,18 @@ export default function SearchResultCard({ hotel, isActive, onSelect }: SearchRe
     };
 
     return (
-        <div
-            className={`group bg-white dark:bg-[#141412] rounded-2xl overflow-hidden border transition-all duration-300 ${isActive ? 'border-accent shadow-xl' : 'border-white/5'}`}
+        <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            whileHover={{ y: -4, scale: 1.01 }}
+            transition={{ duration: 0.3 }}
+            className={`group card-3d bg-white dark:bg-[#141412] rounded-2xl overflow-hidden border transition-all duration-300 cursor-pointer ${isActive ? 'border-accent shadow-[0_0_30px_rgba(232,101,42,0.2)]' : 'border-white/5 hover:border-white/15'}`}
             onClick={onSelect}
         >
             <div className="flex flex-col md:flex-row">
-                <div className="relative w-full md:w-52 h-48">
-                    <Image src={hotel.imageUrl} alt={hotel.name} fill className="object-cover" />
+                <div className="relative w-full md:w-52 h-48 overflow-hidden rounded-t-2xl md:rounded-l-2xl md:rounded-tr-none">
+                    <div className="absolute inset-0 bg-black/10 group-hover:bg-transparent transition-colors z-10" />
+                    <Image src={hotel.imageUrl} alt={hotel.name} fill className="object-cover transition-transform duration-700 group-hover:scale-110" />
                     <div className="absolute top-2 left-2 bg-accent text-white text-[10px] font-black px-2 py-1 rounded-lg">
                         <Zap className="w-3 h-3 inline mr-1" /> {hotel.vibeScore}% WIGO
                     </div>
@@ -90,6 +96,6 @@ export default function SearchResultCard({ hotel, isActive, onSelect }: SearchRe
                     </div>
                 </div>
             </div>
-        </div>
+        </motion.div>
     );
 }
