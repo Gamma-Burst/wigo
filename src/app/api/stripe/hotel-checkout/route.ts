@@ -15,6 +15,18 @@ export async function POST(req: Request) {
 
         const { hotelName, price, hotelId, imageUrl } = await req.json();
 
+        // Detect correct base URL for Stripe success/cancel redirects
+        const baseUrl = process.env.NEXT_PUBLIC_URL
+            ? process.env.NEXT_PUBLIC_URL
+            : process.env.VERCEL_URL
+            ? `https://${process.env.VERCEL_URL}`
+            : 'http://localhost:3000';
+
+        if (!process.env.STRIPE_SECRET_KEY) {
+            console.error("Missing STRIPE_SECRET_KEY environment variable");
+            return NextResponse.json({ error: "Configuration Stripe manquante" }, { status: 500 });
+        }
+
         const session = await stripe.checkout.sessions.create({
             payment_method_types: ['card'],
             line_items: [{
@@ -22,21 +34,21 @@ export async function POST(req: Request) {
                     currency: 'eur',
                     product_data: {
                         name: `WIGO : ${hotelName}`,
-                        images: [imageUrl],
+                        images: imageUrl ? [imageUrl] : [],
                     },
                     unit_amount: Math.round(price * 100), // En centimes pour Stripe
                 },
                 quantity: 1,
             }],
             mode: 'payment',
-            metadata: { hotelId },
-            success_url: `${process.env.NEXT_PUBLIC_URL || 'http://localhost:3000'}/historique?success=true`,
-            cancel_url: `${process.env.NEXT_PUBLIC_URL || 'http://localhost:3000'}/`,
+            metadata: { hotelId: hotelId || 'unknown' },
+            success_url: `${baseUrl}/historique?success=true`,
+            cancel_url: `${baseUrl}/`,
         });
 
         return NextResponse.json({ url: session.url });
-    } catch (error) {
-        console.error("Stripe Error:", error);
-        return NextResponse.json({ error: "Erreur Stripe" }, { status: 500 });
+    } catch (error: any) {
+        console.error("Stripe Error Details:", error.message || error);
+        return NextResponse.json({ error: "Erreur Stripe: " + (error.message || "Unknown error") }, { status: 500 });
     }
 }
