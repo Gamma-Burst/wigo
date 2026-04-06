@@ -2,7 +2,6 @@
 
 import Image from "next/image";
 import { Zap, ArrowRight, Star } from "lucide-react";
-import { useState } from "react";
 import { motion } from "framer-motion";
 import { EnhancedHotelResult } from "@/services/hotel-provider";
 
@@ -28,40 +27,17 @@ interface SearchResultCardProps {
 }
 
 export default function SearchResultCard({ hotel, isActive, onSelect }: SearchResultCardProps) {
-    const [loading, setLoading] = useState(false);
 
-    const handleInternalBooking = async (e: React.MouseEvent) => {
+    const handleInternalBooking = (e: React.MouseEvent) => {
         e.stopPropagation();
-        setLoading(true);
-        try {
-            const res = await fetch('/api/stripe/hotel-checkout', {
-                method: 'POST',
-                body: JSON.stringify({
-                    hotelName: hotel.name,
-                    price: hotel.priceNum,
-                    hotelId: hotel.id,
-                    imageUrl: hotel.imageUrl
-                })
-            });
-            
-            // Handle unauthorized access (Supabase login check)
-            if (res.status === 401) {
-                // Redirect user to the login page if they are not authenticated
-                window.location.href = '/login?redirect_url=' + encodeURIComponent(window.location.pathname + window.location.search);
-                return;
-            }
-
-            const data = await res.json();
-            if (data.url) {
-                window.location.href = data.url;
-            } else {
-                console.error("Booking error:", data.error);
-                setLoading(false); // Reset loading state if no URL is returned
-            }
-        } catch (error) {
-            console.error("Network error during booking:", error);
-            setLoading(false); // Ensure button doesn't get stuck forever
-        }
+        
+        // Sécurité : Redirection vers Booking.com (l'utilisateur final gère ses dates et paye Booking)
+        // plutôt que de prendre le paiement sur le propre compte Stripe de Wigo sans système d'inventaire
+        const searchQuery = encodeURIComponent(hotel.name);
+        const bookingComUrl = `https://www.booking.com/searchresults.fr.html?ss=${searchQuery}`;
+        
+        // Ouvrir dans un nouvel onglet
+        window.open(bookingComUrl, '_blank');
     };
 
     return (
@@ -102,10 +78,9 @@ export default function SearchResultCard({ hotel, isActive, onSelect }: SearchRe
                         </div>
                         <button
                             onClick={handleInternalBooking}
-                            disabled={loading}
                             className="btn-accent px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-2"
                         >
-                            {loading ? "Vérification..." : "Réserver"} <ArrowRight className="w-3 h-3" />
+                            Réserver <ArrowRight className="w-3 h-3" />
                         </button>
                     </div>
                 </div>
