@@ -82,6 +82,10 @@ function smartFallback(query: string): SearchFilters {
                 longitude: city.lng,
                 guests: 2,
                 amenities: [],
+                cityInsight: {
+                    description: `Bienvenue à ${city.display}. Une destination authentique sélectionnée par l'expertise WIGO.`,
+                    highlights: ["Culture locale", "Points d'intérêt", "Ambiance unique"]
+                }
             };
         }
     }
@@ -92,6 +96,10 @@ function smartFallback(query: string): SearchFilters {
         locationDisplay: query,
         guests: 2,
         amenities: [],
+        cityInsight: {
+            description: `Explorez ${query}, une destination pleine de surprises à découvrir avec WIGO.`,
+            highlights: ["Aventure", "Découverte", "Expérience"]
+        }
     };
 }
 
