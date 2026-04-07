@@ -49,11 +49,11 @@ export async function POST(req: NextRequest) {
       searchHotels(filters).catch(() => []),
 
       // Flights — skip for domestic/nearby destinations (BRU → BRU makes no sense)
-      isDomestic
+      isDomestic || !destCode
         ? Promise.resolve([])
         : searchFlights({
             origin: "BRU",
-            destination: destCode || "LIS",
+            destination: destCode,
             departDate,
             returnDate,
             adults: filters.guests || 2,

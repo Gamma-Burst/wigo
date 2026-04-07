@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import Image from 'next/image';
 import { EnhancedHotelResult } from '@/services/hotel-provider';
 import { 
-  X, Star, MapPin, CheckCircle, ExternalLink, Calendar, Users, Info, 
+  X, MapPin, CheckCircle, ExternalLink, Users, Info, 
   Wifi, Coffee, Utensils, CigaretteOff, Car, Dumbbell, Shield, 
   Clock, CreditCard, Languages, ChevronLeft, ChevronRight, TrendingUp,
   Award, Heart, AlertCircle
