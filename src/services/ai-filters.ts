@@ -88,7 +88,22 @@ function smartFallback(query: string): SearchFilters {
                 amenities: [],
                 cityInsight: {
                     description: `Bienvenue à ${city.display}. Une destination authentique sélectionnée par l'expertise WIGO.`,
-                    highlights: ["Culture locale", "Points d'intérêt", "Ambiance unique"]
+                    highlights: ["Culture locale", "Points d'intérêt", "Ambiance unique"],
+                    restaurants: [
+                        { name: "Le Gastronomique", specialty: "Cuisine Locale", vibe: "Chic" },
+                        { name: "La Table du Terroir", specialty: "Spécialités Régionales", vibe: "Authentique" }
+                    ],
+                    atypical: [
+                        { name: "Le Passage Secret", description: "Une ruelle cachée chargée d'histoire." },
+                        { name: "Le Belvédère", description: "Une vue imprenable loin de la foule." }
+                    ],
+                    culture: [
+                        { name: "Le Musée des Arts", type: "Beaux-Arts" },
+                        { name: "La Galerie de demain", type: "Art Contemporain" }
+                    ],
+                    nature: [
+                        { name: "Le Grand Parc", vibe: "Sérénité & Balade" }
+                    ]
                 }
             };
         }
@@ -102,7 +117,8 @@ function smartFallback(query: string): SearchFilters {
         amenities: [],
         cityInsight: {
             description: `Explorez ${query}, une destination pleine de surprises à découvrir avec WIGO.`,
-            highlights: ["Aventure", "Découverte", "Expérience"]
+            highlights: ["Aventure", "Découverte", "Expérience"],
+            restaurants: [], atypical: [], culture: [], nature: []
         }
     };
 }
