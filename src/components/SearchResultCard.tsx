@@ -17,6 +17,9 @@ export interface HotelResult {
     weather?: string;
     hotelRating?: number;
     priceNum?: number;
+    checkIn?: string;
+    checkOut?: string;
+    guests?: number;
 }
 
 
@@ -39,6 +42,12 @@ export default function SearchResultCard({ hotel, isActive, onSelect }: SearchRe
         
         if (affiliateId) {
             bookingComUrl += `&aid=${affiliateId}`;
+        }
+        if (hotel.checkIn && hotel.checkOut) {
+            bookingComUrl += `&checkin=${hotel.checkIn}&checkout=${hotel.checkOut}`;
+        }
+        if (hotel.guests) {
+            bookingComUrl += `&group_adults=${hotel.guests}&no_rooms=1`;
         }
         
         // Ouvrir dans un nouvel onglet

@@ -131,7 +131,10 @@ async function getHotelOffers(hotelIds: string[], checkIn?: string, checkOut?: s
         priceNum: wigoPriceNum,
         hotelRating: h.rating ? parseInt(h.rating) : 3,
         weather: "sunny",
-        offerId: offer?.id
+        offerId: offer?.id,
+        checkIn: ci,
+        checkOut: co,
+        guests: adults || 2
       } as EnhancedHotelResult);
       imgIndex++;
     });
