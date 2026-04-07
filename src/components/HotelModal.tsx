@@ -5,7 +5,7 @@ import { EnhancedHotelResult } from '@/services/hotel-provider';
 import { 
   X, Star, MapPin, CheckCircle, ExternalLink, Calendar, Users, Info, 
   Wifi, Coffee, Utensils, Cigarette, CigaretteOff, Car, Dumbbell, Shield, 
-  Clock, CreditCard, Languages, HelpCircle 
+  Clock, CreditCard, Languages 
 } from 'lucide-react';
 
 interface HotelModalProps {
