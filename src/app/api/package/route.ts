@@ -70,15 +70,23 @@ export async function POST(req: NextRequest) {
     ]);
 
     // 3. Return the WIGO Passport payload
-    return NextResponse.json({
+    return new NextResponse(JSON.stringify({
       passport: {
         destination: filters.locationDisplay,
         intent: query,
-        hotels: hotels.slice(0, 3), // Top 3
-        flights: flights.slice(0, 3), // Top 3
-        activities: activities.slice(0, 3), // Top 3
+        hotels: hotels, // All results for more choice
+        flights: flights.slice(0, 5), // Top 5
+        activities: activities.slice(0, 10), // Top 10
         cityInsight: filters.cityInsight
       }
+    }), {
+      status: 200,
+      headers: {
+        'Content-Type': 'application/json',
+        'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+        'Pragma': 'no-cache',
+        'Expires': '0',
+      },
     });
 
   } catch (error) {

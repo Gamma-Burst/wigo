@@ -19,6 +19,10 @@ export interface SearchFilters {
     cityInsight?: {
         description: string;
         highlights: string[];
+        restaurants?: { name: string; specialty: string; vibe: string }[];
+        atypical?: { name: string; description: string }[];
+        culture?: { name: string; type: string }[];
+        nature?: { name: string; vibe: string }[];
     };
 }
 
@@ -121,8 +125,16 @@ RÈGLES DE DESTINATION :
 - "locationDisplay": Format "Lieu (Pays)" (EX: "Maredsous (Belgique)", "Liège (Belgique)").
 - "latitude": Coordonnée géolocalisée précise de latitude absolue (Nombre).
 - "longitude": Coordonnée géolocalisée précise de longitude absolue (Nombre).
-- "cityInsight": Un objet avec "description" (2 phrases max sur l'ambiance) et "highlights" (array de 3 strings, points forts incontournables).
-IMPORTANT : Tu DOIS fournir les coordonnées géographiques (latitude et longitude) exactes pour le lieu demandé, même s'il s'agit d'un petit village comme Maredsous.
+- "cityInsight": {
+    "description": "2 phrases max sur l'ambiance",
+    "highlights": ["3 points forts"],
+    "restaurants": [{"name": "string", "specialty": "string", "vibe": "chic/local"}],
+    "atypical": [{"name": "string", "description": "lieu insolite peu connu"}],
+    "culture": [{"name": "string", "type": "musée/art"}],
+    "nature": [{"name": "string", "vibe": "parc/balade"}]
+}
+IMPORTANT : Priorise des lieux ATYPIQUES et INSOLITES que les guides classiques ne mentionnent pas.
+IMPORTANT : Tu DOIS fournir les coordonnées géographiques (latitude et longitude) exactes pour le lieu demandé.
 
 Requête: "${query}"`;
 
@@ -153,7 +165,8 @@ Requête: "${query}"`;
             checkOut: parsed.checkOut,
             cityInsight: parsed.cityInsight || {
                 description: `Découvrez ${parsed.locationDisplay || fallback.locationDisplay}, une destination unique sélectionnée par WIGO.`,
-                highlights: ["Exploration locale", "Gastronomie", "Culture"]
+                highlights: ["Exploration locale", "Gastronomie", "Culture"],
+                restaurants: [], atypical: [], culture: [], nature: []
             }
         } as SearchFilters;
 

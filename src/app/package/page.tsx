@@ -4,7 +4,7 @@ import { useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useState } from "react";
 import FlightResultCard, { FlightResult } from "@/components/FlightResultCard";
 import SearchResultCard, { HotelResult } from "@/components/SearchResultCard";
-import { Sparkles, MapPin, Plane, Hotel as HotelIcon, Compass } from "lucide-react";
+import { Sparkles, MapPin, Plane, Hotel as HotelIcon, Compass, Utensils, Camera, Landmark, Palmtree } from "lucide-react";
 import { motion } from "framer-motion";
 import Link from "next/link";
 import { ActivityResult } from "@/app/api/search-activities/route";
@@ -34,15 +34,20 @@ function PackageContent() {
     cityInsight?: {
       description: string;
       highlights: string[];
+      restaurants?: { name: string; specialty: string; vibe: string }[];
+      atypical?: { name: string; description: string }[];
+      culture?: { name: string; type: string }[];
+      nature?: { name: string; vibe: string }[];
     };
   } | null>(null);
 
   useEffect(() => {
     if (!query) return;
     setLoading(true);
-    fetch("/api/package", {
+    fetch(`/api/package?v=${Date.now()}`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
+      cache: 'no-store',
       body: JSON.stringify({ query }),
     })
       .then(res => res.json())
@@ -95,31 +100,106 @@ function PackageContent() {
                 </div>
 
                 {data.cityInsight && (
-                  <motion.div 
-                    initial={{ opacity: 0, x: 20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: 0.3 }}
-                    className="flex-1 bg-white border border-slate-200 p-8 rounded-[2.5rem] shadow-[0_20px_50px_rgba(0,0,0,0.05)] relative overflow-hidden group"
-                  >
-                    <div className="absolute top-0 right-0 p-6 opacity-5 group-hover:scale-110 transition-transform">
-                      <Compass className="w-24 h-24 text-accent" />
-                    </div>
-                    <div className="relative z-10 space-y-6">
-                      <div className="flex items-center gap-3 text-accent font-black uppercase tracking-widest text-xs">
-                        <Sparkles className="w-4 h-4" /> Le Guide WIGO
+                  <div className="space-y-16 mt-12 bg-slate-50/50 p-8 md:p-16 rounded-[4rem] border border-slate-200/50">
+                    {/* Header Experience */}
+                    <div className="flex flex-col md:flex-row gap-12 items-start">
+                      <div className="flex-1 space-y-6">
+                        <div className="flex items-center gap-3 text-accent font-black uppercase tracking-[0.3em] text-xs">
+                          <Compass className="w-5 h-5" /> EXPÉRIENCE ÉLITE
+                        </div>
+                        <h2 className="text-4xl md:text-5xl font-display font-black text-slate-900 tracking-tight leading-tight">
+                          Le Guide Immersion <span className="text-accent italic">WIGO</span>
+                        </h2>
+                        <p className="text-slate-600 text-xl leading-relaxed font-medium">
+                          &quot;{data.cityInsight.description}&quot;
+                        </p>
                       </div>
-                      <p className="text-slate-700 text-lg font-bold leading-relaxed italic">
-                        &quot;{data.cityInsight.description}&quot;
-                      </p>
-                      <div className="flex flex-wrap gap-2">
+                      
+                      <div className="flex-1 grid grid-cols-1 gap-4">
                         {data.cityInsight.highlights.map((h, i) => (
-                          <span key={i} className="bg-slate-50 border border-slate-100 px-4 py-2 rounded-xl text-xs font-black text-slate-600 uppercase tracking-wider">
-                            {h}
-                          </span>
+                          <motion.div 
+                            key={i} 
+                            initial={{ opacity: 0, x: 20 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            transition={{ delay: 0.1 * i }}
+                            className="flex items-center gap-4 bg-white p-6 rounded-3xl border border-slate-100 shadow-sm hover:shadow-md transition-shadow"
+                          >
+                            <div className="w-10 h-10 bg-accent/10 rounded-xl flex items-center justify-center text-accent">
+                              <Sparkles className="w-5 h-5" />
+                            </div>
+                            <span className="text-slate-800 font-bold text-lg">{h}</span>
+                          </motion.div>
                         ))}
                       </div>
                     </div>
-                  </motion.div>
+
+                    {/* Grid Categories */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+                      {/* Restaurants */}
+                      {data.cityInsight.restaurants?.length ? (
+                        <div className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm hover:translate-y-[-4px] transition-transform">
+                          <Utensils className="w-8 h-8 text-orange-500 mb-6" />
+                          <h3 className="text-xl font-black mb-4">Gastronomie</h3>
+                          <div className="space-y-4">
+                            {data.cityInsight.restaurants.map((r, i) => (
+                              <div key={i} className="border-l-2 border-orange-100 pl-4 py-1">
+                                <p className="font-bold text-slate-900">{r.name}</p>
+                                <p className="text-xs text-slate-500 uppercase font-black tracking-widest">{r.specialty} • {r.vibe}</p>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      ) : null}
+
+                      {/* Atypical */}
+                      {data.cityInsight.atypical?.length ? (
+                        <div className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm hover:translate-y-[-4px] transition-transform">
+                          <Camera className="w-8 h-8 text-indigo-500 mb-6" />
+                          <h3 className="text-xl font-black mb-4">Lieux Insolites</h3>
+                          <div className="space-y-4">
+                            {data.cityInsight.atypical.map((a, i) => (
+                              <div key={i} className="border-l-2 border-indigo-100 pl-4 py-1">
+                                <p className="font-bold text-slate-900">{a.name}</p>
+                                <p className="text-xs text-slate-500 font-medium leading-tight">{a.description}</p>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      ) : null}
+
+                      {/* Culture */}
+                      {data.cityInsight.culture?.length ? (
+                        <div className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm hover:translate-y-[-4px] transition-transform">
+                          <Landmark className="w-8 h-8 text-blue-500 mb-6" />
+                          <h3 className="text-xl font-black mb-4">Culture</h3>
+                          <div className="space-y-4">
+                            {data.cityInsight.culture.map((c, i) => (
+                              <div key={i} className="border-l-2 border-blue-100 pl-4 py-1">
+                                <p className="font-bold text-slate-900">{c.name}</p>
+                                <p className="text-xs text-slate-500 uppercase font-bold">{c.type}</p>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      ) : null}
+
+                      {/* Nature */}
+                      {data.cityInsight.nature?.length ? (
+                        <div className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm hover:translate-y-[-4px] transition-transform">
+                          <Palmtree className="w-8 h-8 text-emerald-500 mb-6" />
+                          <h3 className="text-xl font-black mb-4">Parcs</h3>
+                          <div className="space-y-4">
+                            {data.cityInsight.nature.map((n, i) => (
+                              <div key={i} className="border-l-2 border-emerald-100 pl-4 py-1">
+                                <p className="font-bold text-slate-900">{n.name}</p>
+                                <p className="text-xs text-slate-500 font-medium italic">{n.vibe}</p>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      ) : null}
+                    </div>
+                  </div>
                 )}
               </div>
             </motion.div>

@@ -98,9 +98,9 @@ export interface EnhancedHotelResult extends HotelResult {
 
 async function getHotelIds(lat: number, lng: number): Promise<string[]> {
   const result = await amadeusGet<AmadeusHotelListItem>("/v1/reference-data/locations/hotels/by-geocode", {
-    latitude: lat, longitude: lng, radius: 20, radiusUnit: "KM", ratings: "3,4", hotelSource: "ALL"
+    latitude: lat, longitude: lng, radius: 30, radiusUnit: "KM", ratings: "3,4,5", hotelSource: "ALL"
   });
-  return result?.data?.slice(0, 30).map((h) => h.hotelId).filter(Boolean) || [];
+  return result?.data?.slice(0, 50).map((h) => h.hotelId).filter(Boolean) || [];
 }
 
 async function getHotelOffers(hotelIds: string[], checkIn?: string, checkOut?: string, adults?: number, cityName?: string): Promise<EnhancedHotelResult[]> {
@@ -111,7 +111,7 @@ async function getHotelOffers(hotelIds: string[], checkIn?: string, checkOut?: s
   let imgIndex = 0;
 
   const result = await amadeusGet<AmadeusHotelOffer>("/v3/shopping/hotel-offers", {
-    hotelIds: hotelIds.slice(0, 10).join(","),
+    hotelIds: hotelIds.slice(0, 40).join(","),
     checkInDate: ci, checkOutDate: co,
     adults: adults || 2, roomQuantity: 1,
     currency: "EUR", bestRateOnly: true
