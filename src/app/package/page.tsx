@@ -8,6 +8,8 @@ import { Sparkles, MapPin, Plane, Hotel as HotelIcon, Compass } from "lucide-rea
 import { motion } from "framer-motion";
 import Link from "next/link";
 import { ActivityResult } from "@/app/api/search-activities/route";
+import HotelModal from "@/components/HotelModal";
+import type { EnhancedHotelResult } from "@/services/hotel-provider";
 
 export default function PackagePage() {
   return (
@@ -22,6 +24,7 @@ function PackageContent() {
   const query = searchParams.get("q") || "";
   
   const [loading, setLoading] = useState(true);
+  const [selectedHotel, setSelectedHotel] = useState<EnhancedHotelResult | null>(null);
   const [data, setData] = useState<{
     destination: string;
     intent: string;
@@ -124,7 +127,12 @@ function PackageContent() {
                 <div className="grid md:grid-cols-2 gap-6">
                   {data.hotels.map((h, i) => (
                     <motion.div key={h.id} initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.3 + (i * 0.1) }}>
-                      <SearchResultCard hotel={h} />
+                      <SearchResultCard 
+                        hotel={h} 
+                        isActive={selectedHotel?.id === h.id} 
+                        onSelect={() => {}} 
+                        onBook={() => setSelectedHotel(h)} 
+                      />
                     </motion.div>
                   ))}
                 </div>
@@ -191,6 +199,11 @@ function PackageContent() {
           </div>
         )}
       </div>
+      <HotelModal 
+        isOpen={!!selectedHotel} 
+        hotel={selectedHotel} 
+        onClose={() => setSelectedHotel(null)} 
+      />
     </div>
   );
 }
