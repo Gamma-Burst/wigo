@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import localFont from "next/font/local";
 import Navbar from "@/components/Navbar";
+import Footer from "@/components/Footer";
 import AIChat from "@/components/AIChat";
 import "./globals.css";
 
@@ -55,11 +56,12 @@ export default function RootLayout({
           }}
         />
       </head>
-      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
+      <body className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen flex flex-col`}>
         <Navbar />
-        <main className="pt-16">
+        <main className="pt-16 flex-grow">
           {children}
         </main>
+        <Footer />
         <AIChat />
       </body>
     </html>
