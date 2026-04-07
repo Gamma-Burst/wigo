@@ -92,6 +92,7 @@ export interface EnhancedHotelResult extends HotelResult {
   hotelRating?: number;
   city?: string;
   allAmenities?: string[];
+  images?: string[];
 }
 
 async function getHotelIds(lat: number, lng: number): Promise<string[]> {
@@ -138,7 +139,12 @@ async function getHotelOffers(hotelIds: string[], checkIn?: string, checkOut?: s
         checkOut: co,
         guests: adults || 2,
         city: cityName || h.cityCode || "",
-        allAmenities: h.amenities || []
+        allAmenities: h.amenities || [],
+        images: [
+           IMAGES[imgIndex % IMAGES.length],
+           IMAGES[(imgIndex + 1) % IMAGES.length],
+           IMAGES[(imgIndex + 2) % IMAGES.length]
+        ]
       } as EnhancedHotelResult);
       imgIndex++;
     });
