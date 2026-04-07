@@ -31,6 +31,10 @@ function PackageContent() {
     hotels: HotelResult[];
     flights: FlightResult[];
     activities: ActivityResult[];
+    cityInsight?: {
+      description: string;
+      highlights: string[];
+    };
   } | null>(null);
 
   useEffect(() => {
@@ -80,12 +84,44 @@ function PackageContent() {
         ) : data ? (
           <div>
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, ease: "easeOut" }}>
-              <h1 className="text-4xl md:text-6xl font-display font-extrabold text-slate-900 mb-4 tracking-tight">
-                Destination : <span className="text-accent">{data.destination}</span>
-              </h1>
-              <p className="text-slate-500 text-lg mb-12 max-w-2xl">
-                Votre escapade sur mesure, générée par l&apos;IA d&apos;après votre envie : <em className="text-slate-700 font-medium">« {data.intent} »</em>.
-              </p>
+              <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-8">
+                <div className="flex-1">
+                  <h1 className="text-4xl md:text-7xl font-display font-extrabold text-slate-900 mb-6 tracking-tight leading-none">
+                    Destination : <span className="text-accent uppercase italic">{data.destination}</span>
+                  </h1>
+                  <p className="text-slate-500 text-xl font-medium max-w-2xl leading-relaxed">
+                    Votre escapade sur mesure pour <em className="text-slate-800 not-italic border-b-2 border-accent/30 tracking-tight">« {data.intent} »</em>.
+                  </p>
+                </div>
+
+                {data.cityInsight && (
+                  <motion.div 
+                    initial={{ opacity: 0, x: 20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 0.3 }}
+                    className="flex-1 bg-white border border-slate-200 p-8 rounded-[2.5rem] shadow-[0_20px_50px_rgba(0,0,0,0.05)] relative overflow-hidden group"
+                  >
+                    <div className="absolute top-0 right-0 p-6 opacity-5 group-hover:scale-110 transition-transform">
+                      <Compass className="w-24 h-24 text-accent" />
+                    </div>
+                    <div className="relative z-10 space-y-6">
+                      <div className="flex items-center gap-3 text-accent font-black uppercase tracking-widest text-xs">
+                        <Sparkles className="w-4 h-4" /> Le Guide WIGO
+                      </div>
+                      <p className="text-slate-700 text-lg font-bold leading-relaxed italic">
+                        &quot;{data.cityInsight.description}&quot;
+                      </p>
+                      <div className="flex flex-wrap gap-2">
+                        {data.cityInsight.highlights.map((h, i) => (
+                          <span key={i} className="bg-slate-50 border border-slate-100 px-4 py-2 rounded-xl text-xs font-black text-slate-600 uppercase tracking-wider">
+                            {h}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
+              </div>
             </motion.div>
 
             {/* Flights Section */}

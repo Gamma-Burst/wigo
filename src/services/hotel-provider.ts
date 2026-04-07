@@ -62,7 +62,8 @@ const COORDS: Record<string, { lat: number; lng: number }> = {
   "anvers": { lat: 51.2194, lng: 4.4025 }, "spa": { lat: 50.4927, lng: 5.8647 },
   "paris": { lat: 48.8566, lng: 2.3522 }, "amsterdam": { lat: 52.3676, lng: 4.9041 },
   "london": { lat: 51.5074, lng: -0.1278 }, "lisbonne": { lat: 38.7223, lng: -9.1393 },
-  "lisbon": { lat: 38.7223, lng: -9.1393 }, "porto": { lat: 41.1579, lng: -8.6291 }
+  "lisbon": { lat: 38.7223, lng: -9.1393 }, "porto": { lat: 41.1579, lng: -8.6291 },
+  "ostende": { lat: 51.2154, lng: 2.9270 }, "oostende": { lat: 51.2154, lng: 2.9270 }
 };
 
 export function getCoords(location: string): { lat: number; lng: number } {

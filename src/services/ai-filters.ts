@@ -16,6 +16,10 @@ export interface SearchFilters {
     amenities: string[];
     checkIn?: string;
     checkOut?: string;
+    cityInsight?: {
+        description: string;
+        highlights: string[];
+    };
 }
 
 // ─── City dictionary for smart fallback ──────────────────────────────────────
@@ -62,6 +66,8 @@ const CITY_DB: Record<string, { iata: string; display: string; lat: number; lng:
     "bangkok": { iata: "BKK", display: "Bangkok (Thaïlande)", lat: 13.7563, lng: 100.5018 },
     "bali": { iata: "DPS", display: "Bali (Indonésie)", lat: -8.3405, lng: 115.092 },
     "cancun": { iata: "CUN", display: "Cancún (Mexique)", lat: 21.1619, lng: -86.8515 },
+    "ostende": { iata: "OST", display: "Ostende (Belgique)", lat: 51.2154, lng: 2.9270 },
+    "oostende": { iata: "OST", display: "Ostende (Belgique)", lat: 51.2154, lng: 2.9270 },
 };
 
 function smartFallback(query: string): SearchFilters {
@@ -107,6 +113,7 @@ RÈGLES DE DESTINATION :
 - "locationDisplay": Format "Lieu (Pays)" (EX: "Maredsous (Belgique)", "Liège (Belgique)").
 - "latitude": Coordonnée géolocalisée précise de latitude absolue (Nombre).
 - "longitude": Coordonnée géolocalisée précise de longitude absolue (Nombre).
+- "cityInsight": Un objet avec "description" (2 phrases max sur l'ambiance) et "highlights" (array de 3 strings, points forts incontournables).
 IMPORTANT : Tu DOIS fournir les coordonnées géographiques (latitude et longitude) exactes pour le lieu demandé, même s'il s'agit d'un petit village comme Maredsous.
 
 Requête: "${query}"`;
@@ -135,7 +142,11 @@ Requête: "${query}"`;
             max_price: parsed.max_price,
             type: parsed.type,
             checkIn: parsed.checkIn,
-            checkOut: parsed.checkOut
+            checkOut: parsed.checkOut,
+            cityInsight: parsed.cityInsight || {
+                description: `Découvrez ${parsed.locationDisplay || fallback.locationDisplay}, une destination unique sélectionnée par WIGO.`,
+                highlights: ["Exploration locale", "Gastronomie", "Culture"]
+            }
         } as SearchFilters;
 
     } catch (error) {

@@ -76,7 +76,8 @@ export async function POST(req: NextRequest) {
         intent: query,
         hotels: hotels.slice(0, 3), // Top 3
         flights: flights.slice(0, 3), // Top 3
-        activities: activities.slice(0, 3) // Top 3
+        activities: activities.slice(0, 3), // Top 3
+        cityInsight: filters.cityInsight
       }
     });
 
