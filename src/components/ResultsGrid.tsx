@@ -12,9 +12,10 @@ interface ResultsGridProps {
     results: HotelResult[];
     activityResults?: ActivityResult[];
     isActivityMode?: boolean;
+    onBookHotel?: (hotel: HotelResult) => void;
 }
 
-export default function ResultsGrid({ results, activityResults, isActivityMode }: ResultsGridProps) {
+export default function ResultsGrid({ results, activityResults, isActivityMode, onBookHotel }: ResultsGridProps) {
     const [activeHotelId, setActiveHotelId] = useState<string>(results[0]?.id || "");
     const [isMounted, setIsMounted] = useState(false);
 
@@ -42,7 +43,12 @@ export default function ResultsGrid({ results, activityResults, isActivityMode }
                     {results.map((hotel) => (
                         <div key={hotel.id}
                             className={`transition-all duration-300 rounded-2xl ${activeHotelId === hotel.id ? 'ring-2 ring-accent ring-offset-4 ring-offset-background/50 scale-[1.02]' : ''}`}>
-                            <SearchResultCard hotel={hotel} isActive={activeHotelId === hotel.id} onSelect={() => setActiveHotelId(hotel.id)} />
+                            <SearchResultCard 
+                                hotel={hotel} 
+                                isActive={activeHotelId === hotel.id} 
+                                onSelect={() => setActiveHotelId(hotel.id)} 
+                                onBook={() => onBookHotel && onBookHotel(hotel)}
+                            />
                         </div>
                     ))}
                 </div>

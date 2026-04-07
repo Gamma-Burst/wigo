@@ -8,6 +8,8 @@ import CategoryTabs, { CATEGORIES, type CategoryId } from "./CategoryTabs";
 import ResultsGrid from "./ResultsGrid";
 import type { HotelResult } from "./SearchResultCard";
 import type { ActivityResult } from "@/app/api/search-activities/route";
+import type { EnhancedHotelResult } from "@/services/hotel-provider";
+import HotelModal from "./HotelModal";
 import { Sparkles, ArrowRight } from "lucide-react";
 import { motion } from "framer-motion";
 
@@ -125,6 +127,7 @@ export default function Hero() {
   const [isSearching, setIsSearching] = useState(false);
   const [msgIdx, setMsgIdx] = useState(0);
   const [results, setResults] = useState<(HotelResult | ActivityResult)[] | null>(null);
+  const [selectedHotelDetails, setSelectedHotelDetails] = useState<EnhancedHotelResult | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const [isSignedIn, setIsSignedIn] = useState(false);
   const supabase = createClient();
@@ -276,6 +279,7 @@ export default function Hero() {
                   results={visibleResults as HotelResult[]}
                   activityResults={activeCategory !== "hotels" ? visibleResults as ActivityResult[] : undefined}
                   isActivityMode={activeCategory !== "hotels"}
+                  onBookHotel={(hotel) => setSelectedHotelDetails(hotel as EnhancedHotelResult)}
                 />
               )}
 
@@ -319,6 +323,11 @@ export default function Hero() {
             </>
           )}
         </div>
+        <HotelModal 
+          isOpen={!!selectedHotelDetails} 
+          hotel={selectedHotelDetails} 
+          onClose={() => setSelectedHotelDetails(null)} 
+        />
       </div>
     );
   }

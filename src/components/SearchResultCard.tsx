@@ -1,9 +1,8 @@
 "use client";
 
 import Image from "next/image";
-import { Zap, ArrowRight, Star } from "lucide-react";
+import { ArrowRight, Star, Heart } from "lucide-react";
 import { motion } from "framer-motion";
-import { EnhancedHotelResult } from "@/services/hotel-provider";
 
 export interface HotelResult {
     id: string;
@@ -24,35 +23,13 @@ export interface HotelResult {
 
 
 interface SearchResultCardProps {
-    hotel: EnhancedHotelResult;
-    isActive?: boolean;
-    onSelect?: () => void;
+    hotel: HotelResult;
+    isActive: boolean;
+    onSelect: () => void;
+    onBook?: () => void;
 }
 
-export default function SearchResultCard({ hotel, isActive, onSelect }: SearchResultCardProps) {
-
-    const handleInternalBooking = (e: React.MouseEvent) => {
-        e.stopPropagation();
-        
-        // Sécurité : Redirection vers Booking.com (l'utilisateur final gère ses dates et paye Booking)
-        // plutôt que de prendre le paiement sur le propre compte Stripe de Wigo sans système d'inventaire
-        const searchQuery = encodeURIComponent(hotel.name);
-        const affiliateId = process.env.NEXT_PUBLIC_BOOKING_AFFILIATE_ID;
-        let bookingComUrl = `https://www.booking.com/searchresults.fr.html?ss=${searchQuery}`;
-        
-        if (affiliateId) {
-            bookingComUrl += `&aid=${affiliateId}`;
-        }
-        if (hotel.checkIn && hotel.checkOut) {
-            bookingComUrl += `&checkin=${hotel.checkIn}&checkout=${hotel.checkOut}`;
-        }
-        if (hotel.guests) {
-            bookingComUrl += `&group_adults=${hotel.guests}&no_rooms=1`;
-        }
-        
-        // Ouvrir dans un nouvel onglet
-        window.open(bookingComUrl, '_blank');
-    };
+export default function SearchResultCard({ hotel, isActive, onSelect, onBook }: SearchResultCardProps) {
 
     return (
         <motion.div
@@ -64,25 +41,45 @@ export default function SearchResultCard({ hotel, isActive, onSelect }: SearchRe
             onClick={onSelect}
         >
             <div className="flex flex-col md:flex-row">
-                <div className="relative w-full md:w-52 h-48 overflow-hidden rounded-t-2xl md:rounded-l-2xl md:rounded-tr-none">
-                    <div className="absolute inset-0 bg-black/10 group-hover:bg-transparent transition-colors z-10" />
-                    <Image src={hotel.imageUrl} alt={hotel.name} fill className="object-cover transition-transform duration-700 group-hover:scale-110" />
-                    <div className="absolute top-2 left-2 bg-accent text-white text-[10px] font-black px-2 py-1 rounded-lg">
-                        <Zap className="w-3 h-3 inline mr-1" /> {hotel.vibeScore}% WIGO
+                {/* Images */}
+                <div className="w-full md:w-[35%] h-[250px] relative overflow-hidden shrink-0">
+                    <Image
+                        src={hotel.imageUrl}
+                        alt={hotel.name}
+                        fill
+                        className="object-cover transition-transform duration-700 blur-0 group-hover:scale-105"
+                    />
+                    <div className="absolute top-3 right-3 bg-white/10 backdrop-blur-md p-2 rounded-full cursor-pointer hover:bg-white/20 transition-colors">
+                        <Heart className="w-4 h-4 text-white" />
                     </div>
+                    {hotel.vibeScore && (
+                        <div className="absolute top-3 left-3 bg-accent text-white px-3 py-1 rounded-full text-xs font-bold shadow-lg flex items-center gap-1">
+                            <span className="text-white text-base">⚡</span> {hotel.vibeScore}% WIGO
+                        </div>
+                    )}
                 </div>
-                <div className="flex-grow p-4 flex flex-col justify-between">
+
+                {/* Contenu */}
+                <div className="flex-1 p-5 md:p-6 flex flex-col justify-between">
                     <div>
                         <div className="flex justify-between items-start mb-2">
-                            <h3 className="font-bold text-foreground text-sm leading-tight">{hotel.name}</h3>
-                            <div className="text-right">
-                                <div className="text-lg font-black text-foreground">{hotel.price}</div>
-                                <div className="text-[10px] opacity-40">TTC sur WIGO</div>
+                            <div>
+                                <h3 className="text-xl font-bold font-display text-foreground group-hover:text-accent transition-colors leading-tight">{hotel.name}</h3>
+                                <div className="flex items-center text-yellow-500 mt-1">
+                                    {[...Array(hotel.hotelRating || 3)].map((_, i) => (
+                                        <Star key={i} className="w-3.5 h-3.5 fill-current" />
+                                    ))}
+                                </div>
+                            </div>
+                            <div className="text-right pl-4 shrink-0">
+                                <div className="text-2xl font-black text-foreground">{hotel.price}</div>
+                                <div className="text-[10px] text-foreground/40 font-medium">TTC sur WIGO</div>
                             </div>
                         </div>
-                        <div className="flex gap-1 mb-2">
-                            {[1, 2, 3, 4, 5].map(s => (
-                                <Star key={s} className={`w-3 h-3 ${s <= (hotel.hotelRating || 3) ? 'text-amber-400 fill-amber-400' : 'text-white/10'}`} />
+
+                        <div className="flex flex-wrap gap-2 mt-4 mb-6">
+                            {hotel.tags.map((tag, i) => (
+                                <span key={i} className="text-xs bg-foreground/5 text-foreground/60 px-3 py-1 rounded-full border border-foreground/5">{tag}</span>
                             ))}
                         </div>
                     </div>
@@ -91,7 +88,10 @@ export default function SearchResultCard({ hotel, isActive, onSelect }: SearchRe
                             ✓ Confirmation immédiate
                         </div>
                         <button
-                            onClick={handleInternalBooking}
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                if (onBook) onBook();
+                            }}
                             className="btn-accent px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-2"
                         >
                             Réserver <ArrowRight className="w-3 h-3" />
