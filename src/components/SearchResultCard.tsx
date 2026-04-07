@@ -19,6 +19,7 @@ export interface HotelResult {
     checkIn?: string;
     checkOut?: string;
     guests?: number;
+    city?: string;
 }
 
 

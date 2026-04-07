@@ -7,7 +7,7 @@ import { HotelResult } from "@/components/SearchResultCard";
 import { SearchFilters } from "./ai-filters";
 import { amadeusGet, getDefaultCheckIn, getDefaultCheckOut } from "./amadeus-client";
 
-const HOTEL_MARKUP = 1.15; // Marge de 15% pour WIGO
+const HOTEL_MARKUP = 1.10; // Marge de 10% pour WIGO (Ajusté de 15%)
 
 const IMAGES = [
   "https://images.unsplash.com/photo-1542718610-a1d656d1884c?w=800&q=80",
@@ -90,16 +90,17 @@ export interface EnhancedHotelResult extends HotelResult {
   priceNum?: number;
   currency?: string;
   hotelRating?: number;
+  city?: string;
 }
 
 async function getHotelIds(lat: number, lng: number): Promise<string[]> {
   const result = await amadeusGet<AmadeusHotelListItem>("/v1/reference-data/locations/hotels/by-geocode", {
-    latitude: lat, longitude: lng, radius: 20, radiusUnit: "KM", ratings: "3,4,5", hotelSource: "ALL"
+    latitude: lat, longitude: lng, radius: 20, radiusUnit: "KM", ratings: "3,4", hotelSource: "ALL"
   });
   return result?.data?.slice(0, 30).map((h) => h.hotelId).filter(Boolean) || [];
 }
 
-async function getHotelOffers(hotelIds: string[], checkIn?: string, checkOut?: string, adults?: number): Promise<EnhancedHotelResult[]> {
+async function getHotelOffers(hotelIds: string[], checkIn?: string, checkOut?: string, adults?: number, cityName?: string): Promise<EnhancedHotelResult[]> {
   if (hotelIds.length === 0) return [];
   const ci = checkIn || getDefaultCheckIn();
   const co = checkOut || getDefaultCheckOut();
@@ -134,7 +135,8 @@ async function getHotelOffers(hotelIds: string[], checkIn?: string, checkOut?: s
         offerId: offer?.id,
         checkIn: ci,
         checkOut: co,
-        guests: adults || 2
+        guests: adults || 2,
+        city: cityName || h.cityCode || ""
       } as EnhancedHotelResult);
       imgIndex++;
     });
@@ -155,7 +157,7 @@ export async function searchHotels(filters: SearchFilters): Promise<EnhancedHote
 
   if (lat && lng) {
     const ids = await getHotelIds(lat, lng);
-    if (ids.length > 0) return await getHotelOffers(ids, filters.checkIn, filters.checkOut, filters.guests);
+    if (ids.length > 0) return await getHotelOffers(ids, filters.checkIn, filters.checkOut, filters.guests, filters.location);
   }
   return [];
 }

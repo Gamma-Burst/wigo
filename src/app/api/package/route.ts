@@ -7,7 +7,8 @@ import { searchActivities } from "@/services/activity-provider";
 export const dynamic = "force-dynamic";
 
 // Belgian/nearby airports where BRU flights make no sense
-const DOMESTIC_CODES = new Set(["BRU", "CRL", "LGG", "ANR", "OST", "QNM", "QMX", "LUX"]);
+// Airports where flights from BRU makes no sense (Domestic or very close like Paris/Amsterdam)
+const NO_FLIGHT_CODES = new Set(["BRU", "CRL", "LGG", "ANR", "OST", "QNM", "QMX", "LUX", "CDG", "ORY", "BVA", "PAR", "AMS", "LIL"]);
 
 export async function POST(req: NextRequest) {
   try {
@@ -35,12 +36,12 @@ export async function POST(req: NextRequest) {
     let returnDate = filters.checkOut;
     if (!returnDate) {
       const returnDateObj = new Date(departDate);
-      returnDateObj.setDate(returnDateObj.getDate() + 3);
+      returnDateObj.setDate(returnDateObj.getDate() + 2);
       returnDate = returnDateObj.toISOString().split("T")[0];
     }
 
     const destCode = filters.iataCode || "";
-    const isDomestic = DOMESTIC_CODES.has(destCode);
+    const isDomestic = NO_FLIGHT_CODES.has(destCode);
 
     // 2. Fetch all components of the Package asynchronously
     const [hotels, flights, activities] = await Promise.all([
@@ -56,6 +57,7 @@ export async function POST(req: NextRequest) {
             departDate,
             returnDate,
             adults: filters.guests || 2,
+            nonStop: true,
           }).catch(() => []),
 
       // Activities
