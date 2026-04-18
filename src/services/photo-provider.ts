@@ -4,7 +4,7 @@
  * Falls back to Unsplash generic images if Google fails.
  */
 
-const GOOGLE_API_KEY = process.env.GOOGLE_API_KEY;
+const GOOGLE_API_KEY = process.env.GOOGLE_MAPS_API_KEY || process.env.GOOGLE_API_KEY;
 
 // In-memory cache to avoid repeated API calls for the same hotel
 const photoCache = new Map<string, string[]>();
