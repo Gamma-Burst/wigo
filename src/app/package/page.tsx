@@ -285,14 +285,22 @@ function PackageContent() {
                  {data.activities.length > 0 ? (
                     <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
                     {data.activities.slice(0, 6).map((act, i) => (
-                      <motion.div 
-                         key={act.id} 
-                         initial={{ opacity: 0, scale: 0.95 }} 
-                         animate={{ opacity: 1, scale: 1 }} 
-                         transition={{ delay: i * 0.1 }}
-                         whileHover={{ y: -8, transition: { duration: 0.4, ease: "circOut" } }}
-                         className="bg-white border border-slate-100 shadow-2xl shadow-slate-200/50 rounded-[2.5rem] overflow-hidden cursor-pointer group flex flex-col h-full"
-                      >
+                       <motion.div 
+                          key={act.id} 
+                          initial={{ opacity: 0, scale: 0.95 }} 
+                          animate={{ opacity: 1, scale: 1 }} 
+                          transition={{ delay: i * 0.1 }}
+                          whileHover={{ y: -8, transition: { duration: 0.4, ease: "circOut" } }}
+                          onClick={() => {
+                            if (act.website) {
+                              window.open(act.website, '_blank');
+                            } else {
+                              const searchQuery = encodeURIComponent(`${act.name} ${data.destination || ''}`);
+                              window.open(`https://www.google.com/search?q=${searchQuery}`, '_blank');
+                            }
+                          }}
+                          className="bg-white border border-slate-100 shadow-2xl shadow-slate-200/50 rounded-[2.5rem] overflow-hidden cursor-pointer group flex flex-col h-full"
+                       >
                          <div className="h-64 bg-slate-100 relative overflow-hidden">
                             {act.imageUrl ? (
                               // eslint-disable-next-line @next/next/no-img-element
