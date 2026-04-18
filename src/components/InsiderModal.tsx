@@ -87,59 +87,67 @@ export default function InsiderModal({ isOpen, onClose, category, insightData, d
           />
           
           <motion.div
-            initial={{ opacity: 0, scale: 0.95, y: 20 }}
+            initial={{ opacity: 0, scale: 0.95, y: 40 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 20 }}
-            className={`relative w-full max-w-2xl overflow-hidden rounded-[3rem] shadow-2xl ${current.color} ${current.textColor} border border-white/10`}
+            transition={{ type: "spring", stiffness: 300, damping: 25, mass: 0.8 }}
+            className={`relative w-full max-w-2xl overflow-hidden rounded-[3rem] shadow-[0_30px_100px_-20px_rgba(0,0,0,0.8)] ${current.color} ${current.textColor} border border-white/10`}
           >
-            {/* Header */}
-            <div className="p-10 pb-6">
-              <button 
-                onClick={onClose}
-                className="absolute top-8 right-8 w-10 h-10 bg-black/10 hover:bg-black/20 rounded-full flex items-center justify-center transition-colors"
-                style={{ backdropFilter: 'blur(10px)' }}
-              >
-                <X className="w-5 h-5" />
-              </button>
-              
-              <div className={`w-16 h-16 rounded-2xl flex items-center justify-center mb-6 bg-black/10`}>
-                {current.icon}
-              </div>
-              <h2 className="text-4xl font-display font-black uppercase italic tracking-tighter mb-2">
-                {current.title}
-              </h2>
-              <div className="flex items-center gap-2 text-sm font-bold opacity-80 uppercase tracking-widest">
-                <MapPin className="w-4 h-4" /> {destination}
-              </div>
-            </div>
+            {/* Top Header Blur Overlay for sleek text fade out when scrolling */}
+            <div className={`absolute top-0 inset-x-0 h-48 bg-gradient-to-b from-${current.color === 'bg-white' ? 'white' : 'black'} via-${current.color === 'bg-white' ? 'white' : 'black'}/80 to-transparent pointer-events-none z-10 opacity-70`} />
 
-            {/* Content List */}
-            <div className="p-10 pt-0 space-y-6 max-h-[60vh] overflow-y-auto custom-scrollbar">
+            <div className="relative flex flex-col max-h-[85vh]">
+              {/* Header */}
+              <div className="p-10 pb-6 shrink-0 relative z-20">
+                <button 
+                  onClick={onClose}
+                  className="absolute top-6 right-6 w-12 h-12 bg-white/10 hover:bg-white/20 border border-white/5 rounded-full flex items-center justify-center transition-all hover:scale-105 active:scale-95"
+                  style={{ backdropFilter: 'blur(12px)' }}
+                >
+                  <X className="w-5 h-5" />
+                </button>
+                
+                <div className={`w-16 h-16 rounded-[1.5rem] flex items-center justify-center mb-6 bg-white/10 border border-white/5 shadow-inner`}>
+                  {current.icon}
+                </div>
+                <h2 className="text-4xl sm:text-5xl font-display font-black uppercase tracking-tighter mb-2 leading-none">
+                  {current.title}
+                </h2>
+                <div className="flex items-center gap-2 text-xs font-black opacity-60 uppercase tracking-[0.2em] mt-4">
+                  <MapPin className="w-4 h-4 text-current" /> {destination}
+                </div>
+              </div>
+
+              {/* Content List */}
+              <div className="overflow-y-auto custom-scrollbar relative z-0 flex-1">
+                <div className="p-10 pt-0 space-y-6 pb-16">
               {current.items.map((item: {name: string, subtitle: string, desc: string}, idx: number) => (
                 <motion.div 
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.1 * idx }}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ type: "spring", stiffness: 400, damping: 30, delay: 0.05 * idx }}
                   key={idx} 
-                  className="bg-black/5 p-6 rounded-2xl border border-black/5 hover:bg-black/10 transition-colors"
+                  className="bg-white/5 p-8 rounded-[2rem] border border-white/5 hover:bg-white/10 transition-all group"
                 >
-                  <h3 className="text-2xl font-bold mb-1">{item.name}</h3>
-                  <div className={`text-xs font-black uppercase tracking-widest mb-3 ${current.accent}`}>
+                  <h3 className="text-2xl font-black mb-1 tracking-tight">{item.name}</h3>
+                  <div className={`text-[10px] font-black uppercase tracking-[0.2em] mb-4 ${current.accent}`}>
                     {item.subtitle}
                   </div>
-                  <p className="opacity-80 font-medium leading-relaxed">
+                  <p className="opacity-70 font-medium leading-relaxed text-sm">
                     {item.desc}
                   </p>
                   
                   {/* Google Maps Button */}
                   <button 
                     onClick={() => window.open(`https://www.google.com/maps/search/${encodeURIComponent(item.name + ' ' + destination)}`, '_blank')}
-                    className="mt-6 text-sm font-bold flex items-center gap-2 opacity-80 hover:opacity-100 transition-opacity"
+                    className="mt-8 text-[11px] font-black flex items-center gap-2 opacity-50 group-hover:opacity-100 transition-opacity uppercase tracking-widest"
                   >
                     Voir sur la carte ↗
                   </button>
                 </motion.div>
               ))}
+                </div>
+              </div>
             </div>
           </motion.div>
         </div>

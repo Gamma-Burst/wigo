@@ -104,10 +104,11 @@ export default function HotelModal({ hotel, isOpen, onClose }: HotelModalProps) 
           
           {/* Main Elite Modal */}
           <motion.div
-            initial={{ opacity: 0, scale: 0.9, y: 40 }}
+            initial={{ opacity: 0, scale: 0.95, y: 40 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.9, y: 40 }}
-            className="bg-[#0a0a0a] border border-white/5 rounded-[3rem] w-full max-w-7xl h-full max-h-[94vh] overflow-hidden shadow-[0_0_100px_rgba(0,0,0,1)] relative flex flex-col md:flex-row"
+            exit={{ opacity: 0, scale: 0.95, y: 20 }}
+            transition={{ type: "spring", stiffness: 300, damping: 25, mass: 0.8 }}
+            className="bg-[#0a0a0a] border border-white/5 rounded-[3rem] w-full max-w-7xl h-full max-h-[94vh] overflow-hidden shadow-[0_30px_100px_-20px_rgba(0,0,0,1)] relative flex flex-col md:flex-row"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Close Button UI */}
@@ -159,8 +160,11 @@ export default function HotelModal({ hotel, isOpen, onClose }: HotelModalProps) 
             </div>
 
             {/* INFORMATION PANEL (RIGHT) */}
-            <div className="flex-1 flex flex-col h-full bg-[#0a0a0a] border-l border-white/5">
-               <div className="flex-1 overflow-y-auto p-8 sm:p-16 space-y-12">
+            <div className="flex-1 flex flex-col h-full bg-[#0a0a0a] border-l border-white/5 relative z-0">
+               {/* Top Gradient for sleek scrolling text fade */}
+               <div className="absolute top-0 inset-x-0 h-32 bg-gradient-to-b from-[#0a0a0a] via-[#0a0a0a]/80 to-transparent pointer-events-none z-10" />
+               <div className="flex-1 overflow-y-auto custom-scrollbar relative">
+                 <div className="p-8 sm:p-16 pb-32 space-y-12">
                   
                   {/* Header Title & Badges */}
                   <div className="space-y-6">
@@ -300,9 +304,10 @@ export default function HotelModal({ hotel, isOpen, onClose }: HotelModalProps) 
                         </div>
                      </div>
                   </div>
+                 </div>
                </div>
-
-               {/* TRANSACTION FOOTER (STICKY) */}
+               
+               {/* Fixed Bottom CTA Bar */}
                <div className="px-10 py-10 sm:px-16 sm:py-14 bg-gradient-to-t from-black to-black/95 border-t border-white/5">
                   <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-10">
                      <div className="space-y-4">
