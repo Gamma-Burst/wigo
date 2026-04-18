@@ -4,6 +4,26 @@
  */
 
 import { amadeusGet } from "./amadeus-client";
+import { getHotelPhotos } from "./photo-provider";
+
+// Category-specific fallback images for activities
+const ACTIVITY_FALLBACKS: Record<string, string[]> = {
+  culture: [
+    "https://images.unsplash.com/photo-1518998053901-5348d3961a04?w=800&q=80",
+    "https://images.unsplash.com/photo-1561455923-c7fe33b4f9cd?w=800&q=80",
+    "https://images.unsplash.com/photo-1548268770-66184a21657e?w=800&q=80",
+  ],
+  nature: [
+    "https://images.unsplash.com/photo-1448375240586-882707db888b?w=800&q=80",
+    "https://images.unsplash.com/photo-1425913397330-cf8af2ff40a1?w=800&q=80",
+    "https://images.unsplash.com/photo-1470770841072-f978cf4d019e?w=800&q=80",
+  ],
+  default: [
+    "https://images.unsplash.com/photo-1575783970733-1aaedde1db74?w=800&q=80",
+    "https://images.unsplash.com/photo-1536431311719-398b6704d4cc?w=800&q=80",
+    "https://images.unsplash.com/photo-1516585427167-9f4af9627e6c?w=800&q=80",
+  ],
+};
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 export interface AmadeusActivity {
@@ -93,7 +113,7 @@ export async function searchActivities(
 
   if (!result?.data?.length) return [];
 
-  return result.data.slice(0, 20).map((act) => ({
+  const mapped = result.data.slice(0, 20).map((act) => ({
     id: act.id,
     name: act.name,
     description: act.shortDescription || act.description || "",
@@ -112,6 +132,27 @@ export async function searchActivities(
     lng: act.geoCode?.longitude || lng,
     source: "amadeus" as const,
   }));
+
+  // Enrich activities that have no images with Google Places photos
+  const fallbacks = ACTIVITY_FALLBACKS.default;
+  const photoTasks = mapped.map(async (act, i) => {
+    if (!act.imageUrl) {
+      try {
+        const photos = await getHotelPhotos(act.name, "", 1);
+        if (photos.length > 0) {
+          act.imageUrl = photos[0];
+        } else {
+          act.imageUrl = fallbacks[i % fallbacks.length];
+        }
+      } catch {
+        act.imageUrl = fallbacks[i % fallbacks.length];
+      }
+    }
+  });
+
+  await Promise.allSettled(photoTasks);
+
+  return mapped;
 }
 
 // ─── Get Points of Interest ──────────────────────────────────────────────────
