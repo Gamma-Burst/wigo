@@ -9,17 +9,21 @@ const config: Config = {
   theme: {
     extend: {
       fontFamily: {
-        sans: ["var(--font-geist-sans)", "DM Sans", "system-ui", "sans-serif"],
+        sans: ["Satoshi", "system-ui", "sans-serif"],
+        display: ["'Libre Caslon Text'", "Georgia", "serif"],
+        body: ["Satoshi", "system-ui", "sans-serif"],
         mono: ["var(--font-geist-mono)", "monospace"],
-        display: ["Syne", "system-ui", "sans-serif"],
-        serif: ["DM Serif Display", "Georgia", "serif"],
       },
       colors: {
         background: "var(--background)",
+        "background-warm": "var(--background-warm)",
         foreground: "var(--foreground)",
+        "foreground-soft": "var(--foreground-soft)",
         accent: {
           DEFAULT: "var(--accent)",
-          light: "var(--accent-light)",
+          hover: "var(--accent-hover)",
+          subtle: "var(--accent-subtle)",
+          glow: "var(--accent-glow)",
         },
         forest: {
           DEFAULT: "var(--forest)",
@@ -27,25 +31,21 @@ const config: Config = {
         },
         muted: "var(--muted)",
         card: "var(--card)",
+        "card-hover": "var(--card-hover)",
+        "surface-raised": "var(--surface-raised)",
       },
       borderColor: {
         DEFAULT: "var(--border)",
         strong: "var(--border-strong)",
       },
-      backgroundImage: {
-        "gradient-radial": "radial-gradient(var(--tw-gradient-stops))",
-        "gradient-conic": "conic-gradient(from 180deg at 50% 50%, var(--tw-gradient-stops))",
-        "gradient-accent": "linear-gradient(135deg, #E8652A 0%, #C94E18 100%)",
-      },
       animation: {
-        "slide-up": "slideUp 0.5s cubic-bezier(0.22, 1, 0.36, 1) both",
-        "fade-in": "fadeIn 0.4s ease both",
-        "scale-in": "scaleIn 0.4s cubic-bezier(0.22, 1, 0.36, 1) both",
-        "spin-slow": "spin 3s linear infinite",
+        "slide-up": "slideUp 0.5s var(--ease-spring) both",
+        "fade-in": "fadeIn 0.35s ease both",
+        "scale-in": "scaleIn 0.4s var(--ease-spring) both",
       },
       keyframes: {
         slideUp: {
-          "0%": { opacity: "0", transform: "translateY(24px)" },
+          "0%": { opacity: "0", transform: "translateY(20px)" },
           "100%": { opacity: "1", transform: "translateY(0)" },
         },
         fadeIn: {
@@ -53,17 +53,23 @@ const config: Config = {
           "100%": { opacity: "1" },
         },
         scaleIn: {
-          "0%": { opacity: "0", transform: "scale(0.95)" },
+          "0%": { opacity: "0", transform: "scale(0.96)" },
           "100%": { opacity: "1", transform: "scale(1)" },
         },
       },
       transitionTimingFunction: {
+        "ease-out-strong": "cubic-bezier(0.23, 1, 0.32, 1)",
         spring: "cubic-bezier(0.22, 1, 0.36, 1)",
+        drawer: "cubic-bezier(0.32, 0.72, 0, 1)",
       },
       boxShadow: {
-        "accent-glow": "0 8px 32px -4px rgba(232, 101, 42, 0.4)",
-        "card-hover": "0 20px 60px -12px rgba(0, 0, 0, 0.15)",
-        "glass": "0 4px 24px -2px rgba(0, 0, 0, 0.12), inset 0 1px 0 rgba(255,255,255,0.1)",
+        "card-rest": "0 1px 3px oklch(0.18 0.015 60 / 0.04), 0 1px 2px oklch(0.18 0.015 60 / 0.03)",
+        "card-hover": "0 16px 48px -12px oklch(0.18 0.015 60 / 0.1), 0 4px 12px -2px oklch(0.18 0.015 60 / 0.06)",
+        "card-active": "0 4px 12px -4px oklch(0.18 0.015 60 / 0.08)",
+        "nav": "0 4px 24px -4px oklch(0.18 0.015 60 / 0.08), 0 1px 2px oklch(0.18 0.015 60 / 0.04)",
+        "input-focus": "0 0 0 3px var(--accent-subtle)",
+        "btn-accent": "0 2px 8px oklch(0.62 0.2 38 / 0.2)",
+        "btn-accent-hover": "0 4px 16px oklch(0.62 0.2 38 / 0.3)",
       },
     },
   },

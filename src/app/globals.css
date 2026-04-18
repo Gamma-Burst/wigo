@@ -1,44 +1,65 @@
-@import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&family=DM+Serif+Display:ital@0;1&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Libre+Caslon+Text:ital,wght@0,400;0,700;1,400&display=swap');
+@import url('https://api.fontshare.com/v2/css?f[]=satoshi@300,400,500,700,900&display=swap');
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
+/* ─── Design Tokens ────────────────────────────────────────────────────────── */
 @layer base {
   :root {
-    --background: #FAFAF7;
-    --foreground: #141410;
-    --accent: #E8652A;
-    --accent-light: #F5A07A;
-    --forest: #1E3A2F;
-    --forest-light: #2D5441;
-    --muted: #6B6B5E;
-    --border: rgba(20, 20, 16, 0.08);
-    --border-strong: rgba(20, 20, 16, 0.15);
-    --card: #FFFFFF;
-    --card-hover: #F5F5F0;
-    --font-display: 'Syne', system-ui, sans-serif;
-    --font-body: 'DM Sans', system-ui, sans-serif;
-    --font-serif: 'DM Serif Display', Georgia, serif;
-    --glow-accent: rgba(232, 101, 42, 0.4);
-    --glow-forest: rgba(30, 58, 47, 0.3);
+    --background: oklch(0.97 0.006 75);
+    --background-warm: oklch(0.98 0.008 75);
+    --foreground: oklch(0.18 0.015 60);
+    --foreground-soft: oklch(0.45 0.01 60);
+    --accent: oklch(0.62 0.2 38);
+    --accent-hover: oklch(0.56 0.2 38);
+    --accent-subtle: oklch(0.62 0.2 38 / 0.08);
+    --accent-glow: oklch(0.62 0.2 38 / 0.15);
+    --forest: oklch(0.3 0.06 160);
+    --forest-light: oklch(0.38 0.06 160);
+    --muted: oklch(0.55 0.008 60);
+    --border: oklch(0.18 0.015 60 / 0.06);
+    --border-strong: oklch(0.18 0.015 60 / 0.12);
+    --card: oklch(0.995 0.003 75);
+    --card-hover: oklch(0.97 0.005 75);
+    --surface-raised: oklch(0.99 0.004 75);
+
+    /* Emil Kowalski easing curves */
+    --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+    --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+    --ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);
+    --ease-spring: cubic-bezier(0.22, 1, 0.36, 1);
+
+    /* Spacing scale (4pt base) */
+    --space-xs: 4px;
+    --space-sm: 8px;
+    --space-md: 16px;
+    --space-lg: 24px;
+    --space-xl: 32px;
+    --space-2xl: 48px;
+    --space-3xl: 64px;
+    --space-4xl: 96px;
   }
 
   @media (prefers-color-scheme: dark) {
     :root {
-      --background: #0A0A08;
-      --foreground: #F2F2EE;
-      --accent: #F07340;
-      --accent-light: #F5A07A;
-      --forest: #2D5441;
-      --forest-light: #3D7059;
-      --muted: #9B9B8E;
-      --border: rgba(242, 242, 238, 0.08);
-      --border-strong: rgba(242, 242, 238, 0.15);
-      --card: #141412;
-      --card-hover: #1E1E1C;
-      --glow-accent: rgba(240, 115, 64, 0.35);
-      --glow-forest: rgba(45, 84, 65, 0.25);
+      --background: oklch(0.13 0.008 60);
+      --background-warm: oklch(0.14 0.01 60);
+      --foreground: oklch(0.92 0.006 75);
+      --foreground-soft: oklch(0.6 0.008 75);
+      --accent: oklch(0.66 0.19 38);
+      --accent-hover: oklch(0.72 0.18 38);
+      --accent-subtle: oklch(0.66 0.19 38 / 0.1);
+      --accent-glow: oklch(0.66 0.19 38 / 0.15);
+      --forest: oklch(0.38 0.06 160);
+      --forest-light: oklch(0.45 0.06 160);
+      --muted: oklch(0.6 0.006 75);
+      --border: oklch(0.92 0.006 75 / 0.07);
+      --border-strong: oklch(0.92 0.006 75 / 0.13);
+      --card: oklch(0.17 0.006 60);
+      --card-hover: oklch(0.2 0.006 60);
+      --surface-raised: oklch(0.15 0.006 60);
     }
   }
 }
@@ -53,31 +74,41 @@ html {
 body {
   color: var(--foreground);
   background: var(--background);
-  font-family: var(--font-body);
+  font-family: 'Satoshi', system-ui, sans-serif;
   overflow-x: hidden;
+  line-height: 1.6;
 }
 
+/* ─── Typography ───────────────────────────────────────────────────────────── */
 .font-display {
-  font-family: var(--font-display) !important;
+  font-family: 'Libre Caslon Text', Georgia, serif !important;
+  letter-spacing: -0.01em;
 }
 
-.font-serif-display {
-  font-family: var(--font-serif) !important;
+.font-body {
+  font-family: 'Satoshi', system-ui, sans-serif !important;
 }
 
-/* ─── Button Styles ───────────────────────────────────────────────────────── */
+/* ─── Buttons ──────────────────────────────────────────────────────────────── */
 .btn-accent {
   background: var(--accent);
   color: white;
-  font-weight: 700;
-  transition: all 0.3s ease;
-  box-shadow: 0 4px 14px rgba(232, 101, 42, 0.3);
+  font-weight: 600;
+  font-family: 'Satoshi', system-ui, sans-serif;
+  transition: transform 160ms var(--ease-out), box-shadow 300ms var(--ease-out), background 200ms ease;
+  box-shadow: 0 2px 8px oklch(0.62 0.2 38 / 0.2);
 }
+
 .btn-accent:hover {
-  background: #d45a24;
-  box-shadow: 0 6px 20px rgba(232, 101, 42, 0.45);
-  transform: translateY(-1px);
+  background: var(--accent-hover);
+  box-shadow: 0 4px 16px oklch(0.62 0.2 38 / 0.3);
 }
+
+.btn-accent:active {
+  transform: scale(0.97);
+  box-shadow: 0 1px 4px oklch(0.62 0.2 38 / 0.2);
+}
+
 .btn-accent:disabled {
   opacity: 0.4;
   cursor: not-allowed;
@@ -88,53 +119,18 @@ body {
 .btn-forest {
   background: var(--forest);
   color: white;
-  font-weight: 700;
-  transition: all 0.3s ease;
-  box-shadow: 0 4px 14px rgba(30, 58, 47, 0.3);
+  font-weight: 600;
+  transition: transform 160ms var(--ease-out), box-shadow 300ms var(--ease-out), background 200ms ease;
+  box-shadow: 0 2px 8px oklch(0.3 0.06 160 / 0.2);
 }
+
 .btn-forest:hover {
   background: var(--forest-light);
-  box-shadow: 0 6px 20px rgba(30, 58, 47, 0.45);
-  transform: translateY(-1px);
+  box-shadow: 0 4px 16px oklch(0.3 0.06 160 / 0.3);
 }
 
-/* ─── Premium Glassmorphism ────────────────────────────────────────────────── */
-.glass {
-  background: rgba(255, 255, 255, 0.08);
-  backdrop-filter: blur(24px) saturate(200%);
-  -webkit-backdrop-filter: blur(24px) saturate(200%);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.1);
-}
-
-.glass-dark {
-  background: rgba(0, 0, 0, 0.3);
-  backdrop-filter: blur(24px) saturate(200%);
-  -webkit-backdrop-filter: blur(24px) saturate(200%);
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.05);
-}
-
-.glass-card {
-  background: rgba(255, 255, 255, 0.06);
-  backdrop-filter: blur(20px) saturate(180%);
-  -webkit-backdrop-filter: blur(20px) saturate(180%);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  box-shadow:
-    0 4px 16px rgba(0, 0, 0, 0.08),
-    0 0 0 1px rgba(255, 255, 255, 0.05),
-    inset 0 1px 0 rgba(255, 255, 255, 0.08);
-  transition: all 0.4s cubic-bezier(0.22, 1, 0.36, 1);
-}
-
-.glass-card:hover {
-  background: rgba(255, 255, 255, 0.1);
-  border-color: rgba(255, 255, 255, 0.18);
-  box-shadow:
-    0 8px 40px rgba(0, 0, 0, 0.15),
-    0 0 0 1px rgba(255, 255, 255, 0.08),
-    inset 0 1px 0 rgba(255, 255, 255, 0.12);
-  transform: translateY(-2px);
+.btn-forest:active {
+  transform: scale(0.97);
 }
 
 /* ─── Scrollbar ────────────────────────────────────────────────────────────── */
@@ -142,133 +138,6 @@ body {
 .scrollbar-hide::-webkit-scrollbar { display: none; }
 
 .text-balance { text-wrap: balance; }
-
-/* ─── Premium Gradients ────────────────────────────────────────────────────── */
-.gradient-text {
-  background: linear-gradient(135deg, var(--accent) 0%, #F5A07A 40%, #FFCC80 70%, #FFE0B2 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-.gradient-text-forest {
-  background: linear-gradient(135deg, var(--forest) 0%, var(--forest-light) 50%, #4CAF50 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-.gradient-text-holographic {
-  background: linear-gradient(135deg, #E8652A 0%, #F07340 15%, #FFD700 30%, #4CAF50 50%, #2196F3 65%, #9C27B0 80%, #E8652A 100%);
-  background-size: 200% auto;
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  animation: holographic 6s linear infinite;
-}
-
-@keyframes holographic {
-  0% { background-position: 0% center; }
-  100% { background-position: 200% center; }
-}
-
-/* ─── Animated Mesh Gradient Background ────────────────────────────────────── */
-.mesh-gradient {
-  background:
-    radial-gradient(ellipse at 20% 50%, rgba(232, 101, 42, 0.12) 0%, transparent 50%),
-    radial-gradient(ellipse at 80% 20%, rgba(30, 58, 47, 0.15) 0%, transparent 50%),
-    radial-gradient(ellipse at 40% 80%, rgba(240, 115, 64, 0.08) 0%, transparent 50%),
-    radial-gradient(ellipse at 60% 30%, rgba(45, 84, 65, 0.1) 0%, transparent 50%);
-  animation: meshMove 20s ease-in-out infinite;
-}
-
-@keyframes meshMove {
-  0%, 100% { background-position: 0% 0%, 100% 0%, 0% 100%, 100% 100%; }
-  25% { background-position: 50% 30%, 70% 50%, 30% 70%, 80% 20%; }
-  50% { background-position: 100% 50%, 0% 100%, 100% 0%, 30% 80%; }
-  75% { background-position: 30% 80%, 50% 30%, 70% 50%, 0% 50%; }
-}
-
-/* ─── 3D Card Effects ──────────────────────────────────────────────────────── */
-.card-3d {
-  transition: all 0.5s cubic-bezier(0.22, 1, 0.36, 1);
-  transform-style: preserve-3d;
-  perspective: 1000px;
-}
-
-.card-3d:hover {
-  transform: translateY(-8px) rotateX(2deg) rotateY(-1deg);
-  box-shadow:
-    0 25px 50px -12px rgba(0, 0, 0, 0.2),
-    0 0 0 1px rgba(255, 255, 255, 0.06),
-    0 0 60px -15px var(--glow-accent);
-}
-
-.card-3d-subtle {
-  transition: all 0.4s cubic-bezier(0.22, 1, 0.36, 1);
-  transform-style: preserve-3d;
-}
-
-.card-3d-subtle:hover {
-  transform: translateY(-4px) scale(1.01);
-  box-shadow:
-    0 20px 40px -10px rgba(0, 0, 0, 0.15),
-    0 0 40px -10px var(--glow-accent);
-}
-
-/* ─── Neon Glow Effects ────────────────────────────────────────────────────── */
-.glow-accent {
-  box-shadow:
-    0 0 15px var(--glow-accent),
-    0 0 45px rgba(232, 101, 42, 0.15),
-    0 0 80px rgba(232, 101, 42, 0.05);
-}
-
-.glow-accent-subtle {
-  box-shadow:
-    0 0 10px rgba(232, 101, 42, 0.15),
-    0 0 30px rgba(232, 101, 42, 0.08);
-}
-
-.text-glow {
-  text-shadow:
-    0 0 20px var(--glow-accent),
-    0 0 40px rgba(232, 101, 42, 0.3),
-    0 0 80px rgba(232, 101, 42, 0.1);
-}
-
-/* ─── Animated Border Gradient ─────────────────────────────────────────────── */
-.border-gradient {
-  position: relative;
-  background: var(--card);
-  border-radius: 1rem;
-}
-
-.border-gradient::before {
-  content: '';
-  position: absolute;
-  inset: -1px;
-  border-radius: inherit;
-  padding: 1px;
-  background: linear-gradient(135deg, var(--accent), var(--forest-light), var(--accent-light), var(--accent));
-  background-size: 300% 300%;
-  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-  -webkit-mask-composite: xor;
-  mask-composite: exclude;
-  animation: borderRotate 4s linear infinite;
-  opacity: 0;
-  transition: opacity 0.4s ease;
-}
-
-.border-gradient:hover::before {
-  opacity: 1;
-}
-
-@keyframes borderRotate {
-  0% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
-  100% { background-position: 0% 50%; }
-}
 
 /* ─── Skeleton Loading ─────────────────────────────────────────────────────── */
 @keyframes shimmer {
@@ -282,14 +151,16 @@ body {
   animation: shimmer 1.4s ease infinite;
 }
 
-/* ─── Motion Animations ────────────────────────────────────────────────────── */
+/* ─── Motion — Emil Kowalski principles ────────────────────────────────────── */
+/* Strong ease-out, 150-250ms range, scale from 0.95 not 0 */
+
 @keyframes slideUp {
-  from { opacity: 0; transform: translateY(32px) scale(0.97); }
-  to { opacity: 1; transform: translateY(0) scale(1); }
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 @keyframes slideDown {
-  from { opacity: 0; transform: translateY(-20px); }
+  from { opacity: 0; transform: translateY(-16px); }
   to { opacity: 1; transform: translateY(0); }
 }
 
@@ -299,261 +170,97 @@ body {
 }
 
 @keyframes scaleIn {
-  from { opacity: 0; transform: scale(0.92); }
+  from { opacity: 0; transform: scale(0.96); }
   to { opacity: 1; transform: scale(1); }
 }
 
-@keyframes slideInLeft {
-  from { opacity: 0; transform: translateX(-30px); }
-  to { opacity: 1; transform: translateX(0); }
-}
-
-@keyframes slideInRight {
-  from { opacity: 0; transform: translateX(30px); }
-  to { opacity: 1; transform: translateX(0); }
-}
-
-@keyframes float {
-  0%, 100% { transform: translateY(0px); }
-  50% { transform: translateY(-10px); }
-}
-
-@keyframes floatSlow {
-  0%, 100% { transform: translateY(0px) rotate(0deg); }
-  33% { transform: translateY(-8px) rotate(1deg); }
-  66% { transform: translateY(-4px) rotate(-1deg); }
-}
-
-@keyframes pulseGlow {
-  0%, 100% { box-shadow: 0 0 15px var(--glow-accent), 0 0 45px rgba(232, 101, 42, 0.15); }
-  50% { box-shadow: 0 0 25px var(--glow-accent), 0 0 65px rgba(232, 101, 42, 0.25); }
-}
-
-@keyframes rotateHue {
-  0% { filter: hue-rotate(0deg); }
-  100% { filter: hue-rotate(360deg); }
-}
-
-@keyframes orbit {
-  0% { transform: rotate(0deg) translateX(80px) rotate(0deg); }
-  100% { transform: rotate(360deg) translateX(80px) rotate(-360deg); }
-}
-
-@keyframes ripple {
-  0% { transform: scale(0.8); opacity: 0.6; }
-  100% { transform: scale(2.4); opacity: 0; }
-}
-
 .animate-slide-up {
-  animation: slideUp 0.6s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation: slideUp 0.5s var(--ease-spring) both;
 }
 
 .animate-slide-down {
-  animation: slideDown 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation: slideDown 0.4s var(--ease-spring) both;
 }
 
 .animate-fade-in {
-  animation: fadeIn 0.4s ease both;
+  animation: fadeIn 0.35s ease both;
 }
 
 .animate-scale-in {
-  animation: scaleIn 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation: scaleIn 0.4s var(--ease-spring) both;
 }
 
-.animate-slide-left {
-  animation: slideInLeft 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
-}
-
-.animate-slide-right {
-  animation: slideInRight 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
-}
-
-.animate-float {
-  animation: float 6s ease-in-out infinite;
-}
-
-.animate-float-slow {
-  animation: floatSlow 8s ease-in-out infinite;
-}
-
-.animate-pulse-glow {
-  animation: pulseGlow 3s ease-in-out infinite;
-}
-
-.animate-orbit {
-  animation: orbit 20s linear infinite;
-}
+/* ─── Stagger children (50ms between items — Emil) ─────────────────────────── */
+.stagger-children > *:nth-child(1) { animation-delay: 0s; }
+.stagger-children > *:nth-child(2) { animation-delay: 0.05s; }
+.stagger-children > *:nth-child(3) { animation-delay: 0.1s; }
+.stagger-children > *:nth-child(4) { animation-delay: 0.15s; }
+.stagger-children > *:nth-child(5) { animation-delay: 0.2s; }
+.stagger-children > *:nth-child(6) { animation-delay: 0.25s; }
+.stagger-children > *:nth-child(7) { animation-delay: 0.3s; }
+.stagger-children > *:nth-child(8) { animation-delay: 0.35s; }
+.stagger-children > *:nth-child(9) { animation-delay: 0.4s; }
 
 .delay-75 { animation-delay: 0.075s; }
 .delay-100 { animation-delay: 0.1s; }
 .delay-150 { animation-delay: 0.15s; }
 .delay-200 { animation-delay: 0.2s; }
 .delay-300 { animation-delay: 0.3s; }
-.delay-400 { animation-delay: 0.4s; }
-.delay-500 { animation-delay: 0.5s; }
-.delay-600 { animation-delay: 0.6s; }
-.delay-700 { animation-delay: 0.7s; }
 
-/* ─── Stagger children animation ──────────────────────────────────────────── */
-.stagger-children > *:nth-child(1) { animation-delay: 0s; }
-.stagger-children > *:nth-child(2) { animation-delay: 0.06s; }
-.stagger-children > *:nth-child(3) { animation-delay: 0.12s; }
-.stagger-children > *:nth-child(4) { animation-delay: 0.18s; }
-.stagger-children > *:nth-child(5) { animation-delay: 0.24s; }
-.stagger-children > *:nth-child(6) { animation-delay: 0.3s; }
-.stagger-children > *:nth-child(7) { animation-delay: 0.36s; }
-.stagger-children > *:nth-child(8) { animation-delay: 0.42s; }
-.stagger-children > *:nth-child(9) { animation-delay: 0.48s; }
-
-/* ─── Canvas / Particle ────────────────────────────────────────────────────── */
-#wigo-canvas {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  z-index: 0;
-}
-
-/* ─── 3D Card Lift ─────────────────────────────────────────────────────────── */
+/* ─── Card Lift — subtle, only transform + opacity ─────────────────────────── */
 .card-lift {
-  transition: all 0.4s cubic-bezier(0.22, 1, 0.36, 1);
-  will-change: transform, box-shadow;
+  transition: transform 400ms var(--ease-spring), box-shadow 400ms var(--ease-spring);
+  will-change: transform;
 }
 
 .card-lift:hover {
-  transform: translateY(-6px) scale(1.01);
-  box-shadow:
-    0 20px 60px -12px rgba(0, 0, 0, 0.2),
-    0 0 30px -5px var(--glow-accent);
+  transform: translateY(-4px);
+  box-shadow: 0 16px 48px -12px oklch(0.18 0.015 60 / 0.1), 0 4px 12px -2px oklch(0.18 0.015 60 / 0.06);
 }
 
-/* ─── Interactive Input Glow ───────────────────────────────────────────────── */
+.card-lift:active {
+  transform: translateY(-2px) scale(0.99);
+}
+
+/* ─── Input Focus ──────────────────────────────────────────────────────────── */
 .input-glow:focus {
-  box-shadow:
-    0 0 0 3px rgba(232, 101, 42, 0.15),
-    0 0 20px rgba(232, 101, 42, 0.1);
+  box-shadow: 0 0 0 3px var(--accent-subtle);
   outline: none;
 }
 
-/* ─── Premium Button ───────────────────────────────────────────────────────── */
-.btn-accent {
-  background: linear-gradient(135deg, #E8652A 0%, #D4551E 50%, #C94E18 100%);
-  color: white;
-  font-weight: 600;
-  transition: all 0.3s cubic-bezier(0.22, 1, 0.36, 1);
-  position: relative;
-  overflow: hidden;
-}
-
-.btn-accent::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(135deg, rgba(255,255,255,0.2) 0%, transparent 50%, rgba(255,255,255,0.1) 100%);
-  opacity: 0;
-  transition: opacity 0.3s ease;
-}
-
-.btn-accent:hover {
-  transform: translateY(-2px) scale(1.02);
-  box-shadow:
-    0 10px 30px -5px rgba(232, 101, 42, 0.5),
-    0 0 40px -10px rgba(232, 101, 42, 0.3);
-}
-
-.btn-accent:hover::before {
-  opacity: 1;
-}
-
-.btn-accent:active {
-  transform: scale(0.97);
-  box-shadow: 0 4px 12px -2px rgba(232, 101, 42, 0.4);
-}
-
-/* ─── Premium Orb Background Effects ──────────────────────────────────────── */
-.orb {
-  position: absolute;
-  border-radius: 50%;
-  filter: blur(60px);
-  opacity: 0.4;
-  animation: floatSlow 12s ease-in-out infinite;
-  pointer-events: none;
-}
-
-.orb-accent {
-  background: radial-gradient(circle, var(--accent) 0%, transparent 70%);
-}
-
-.orb-forest {
-  background: radial-gradient(circle, var(--forest) 0%, transparent 70%);
-}
-
-.orb-gold {
-  background: radial-gradient(circle, #FFD700 0%, transparent 70%);
-}
-
-/* ─── Noise texture overlay ────────────────────────────────────────────────── */
+/* ─── Noise texture overlay — fixed, pointer-events none ───────────────────── */
 .noise-overlay::after {
   content: '';
-  position: absolute;
+  position: fixed;
   inset: 0;
-  opacity: 0.03;
+  opacity: 0.025;
   background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
   pointer-events: none;
-  z-index: 1;
+  z-index: 50;
 }
 
-/* ─── Spotlight / Mouse follow effect base ─────────────────────────────────── */
-.spotlight-card {
-  position: relative;
-  overflow: hidden;
-}
-
-.spotlight-card::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: radial-gradient(600px circle at var(--mouse-x, 50%) var(--mouse-y, 50%), rgba(232, 101, 42, 0.06), transparent 40%);
-  z-index: 0;
-  opacity: 0;
-  transition: opacity 0.3s ease;
-}
-
-.spotlight-card:hover::before {
-  opacity: 1;
-}
-
-/* ─── Magnetic hover for interactive elements ──────────────────────────────── */
-.magnetic {
-  transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1);
-}
-
-.magnetic:hover {
-  transform: scale(1.05);
-}
-
-.magnetic:active {
-  transform: scale(0.95);
-}
-
-/* ─── Premium Tag Pill ─────────────────────────────────────────────────────── */
+/* ─── Tag Pill ─────────────────────────────────────────────────────────────── */
 .tag-pill {
-  background: rgba(232, 101, 42, 0.08);
-  border: 1px solid rgba(232, 101, 42, 0.15);
+  background: var(--accent-subtle);
+  border: 1px solid var(--accent-glow);
   color: var(--accent);
   font-weight: 600;
-  font-size: 0.75rem;
-  padding: 0.25rem 0.75rem;
+  font-size: 0.7rem;
+  padding: 0.2rem 0.6rem;
   border-radius: 9999px;
-  transition: all 0.2s ease;
+  letter-spacing: 0.02em;
+  transition: transform 160ms var(--ease-out), background 200ms ease;
 }
 
 .tag-pill:hover {
-  background: rgba(232, 101, 42, 0.15);
-  border-color: rgba(232, 101, 42, 0.3);
-  transform: scale(1.05);
+  background: var(--accent-glow);
 }
 
-/* ─── Animated underline ───────────────────────────────────────────────────── */
+.tag-pill:active {
+  transform: scale(0.97);
+}
+
+/* ─── Animated underline — clip-path technique (Emil) ──────────────────────── */
 .hover-underline {
   position: relative;
 }
@@ -563,25 +270,119 @@ body {
   position: absolute;
   bottom: -2px;
   left: 0;
-  width: 0;
-  height: 2px;
-  background: linear-gradient(90deg, var(--accent), var(--accent-light));
-  transition: width 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+  width: 100%;
+  height: 1.5px;
+  background: var(--accent);
   border-radius: 9999px;
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 250ms var(--ease-out);
 }
 
 .hover-underline:hover::after {
-  width: 100%;
+  transform: scaleX(1);
 }
 
-/* ─── Reveal on scroll (used with IntersectionObserver) ───────────────────── */
+/* ─── Reveal on scroll ────────────────────────────────────────────────────── */
 .reveal {
   opacity: 0;
-  transform: translateY(20px);
-  transition: all 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+  transform: translateY(16px);
+  transition: opacity 600ms var(--ease-spring), transform 600ms var(--ease-spring);
 }
 
 .reveal.visible {
   opacity: 1;
   transform: translateY(0);
+}
+
+/* ─── Eyebrow tag (Taste) ─────────────────────────────────────────────────── */
+.eyebrow {
+  font-size: 0.625rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  color: var(--accent);
+  padding: 0.3rem 0.8rem;
+  border-radius: 9999px;
+  background: var(--accent-subtle);
+  border: 1px solid var(--accent-glow);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+/* ─── Magnetic hover (subtle) ──────────────────────────────────────────────── */
+@media (hover: hover) and (pointer: fine) {
+  .magnetic {
+    transition: transform 250ms var(--ease-out);
+  }
+  .magnetic:hover {
+    transform: scale(1.03);
+  }
+  .magnetic:active {
+    transform: scale(0.97);
+  }
+}
+
+/* ─── Canvas (kept for compatibility) ──────────────────────────────────────── */
+#wigo-canvas {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ─── Reduced motion ──────────────────────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* ─── Border gradient (kept, refined) ──────────────────────────────────────── */
+.border-gradient {
+  position: relative;
+  background: var(--card);
+  border-radius: 1rem;
+}
+
+.border-gradient::before {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  padding: 1px;
+  background: linear-gradient(135deg, var(--accent), var(--forest-light));
+  background-size: 200% 200%;
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  opacity: 0;
+  transition: opacity 300ms var(--ease-out);
+}
+
+.border-gradient:hover::before {
+  opacity: 0.6;
+}
+
+/* ─── Spotlight card — mouse-follow subtle ─────────────────────────────────── */
+.spotlight-card {
+  position: relative;
+  overflow: hidden;
+}
+
+.spotlight-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(500px circle at var(--mouse-x, 50%) var(--mouse-y, 50%), var(--accent-subtle), transparent 40%);
+  z-index: 0;
+  opacity: 0;
+  transition: opacity 300ms ease;
+}
+
+.spotlight-card:hover::before {
+  opacity: 1;
 }

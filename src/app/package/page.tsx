@@ -59,8 +59,8 @@ function PackageContent() {
   }, [query]);
 
   return (
-    <div className="min-h-screen bg-slate-50 pt-24 pb-16 px-4">
-      <div className="max-w-5xl mx-auto">
+    <div className="min-h-screen bg-white pt-24 pb-32 px-4 md:px-8">
+      <div className="max-w-[1400px] mx-auto">
         <div className="mb-8 flex items-center justify-between">
           <Link href="/" className="text-slate-500 hover:text-slate-800 transition-colors text-sm font-medium">
             ← Nouvelle Magie
@@ -74,240 +74,251 @@ function PackageContent() {
           <motion.div 
             initial={{ opacity: 0 }} 
             animate={{ opacity: 1 }} 
-            className="text-center py-32"
+            className="flex flex-col items-center justify-center py-48 text-center"
           >
-            <div className="relative w-24 h-24 mx-auto mb-8">
-              <div className="absolute inset-0 border-4 border-slate-200 rounded-full" />
-              <div className="absolute inset-0 border-4 border-accent border-t-transparent rounded-full animate-spin" />
-              <Compass className="absolute inset-0 m-auto w-10 h-10 text-accent animate-pulse" />
+            <div className="relative w-32 h-32 mb-12">
+              <motion.div 
+                animate={{ rotate: 360 }} 
+                transition={{ duration: 4, repeat: Infinity, ease: "linear" }}
+                className="absolute inset-0 border-[1px] border-slate-200 rounded-full" 
+              />
+              <motion.div 
+                animate={{ rotate: -360 }} 
+                transition={{ duration: 8, repeat: Infinity, ease: "linear" }}
+                className="absolute inset-4 border-[1px] border-accent/30 rounded-full border-t-accent" 
+              />
+              <Compass className="absolute inset-0 m-auto w-12 h-12 text-accent" />
             </div>
-            <h1 className="text-3xl font-display font-bold text-slate-900 mb-3">Création de votre Évasion...</h1>
-            <p className="text-slate-500 text-lg max-w-lg mx-auto">
-              Notre IA interroge simultanément des milliers de vols, d&apos;hôtels et d&apos;activités pour construire le package idéal pour <strong>« {query} »</strong>.
+            <h1 className="text-4xl font-display font-black text-slate-900 mb-4 tracking-tighter italic">Rédaction de votre Guide Personnel...</h1>
+            <p className="text-slate-400 text-xl font-medium max-w-md mx-auto leading-relaxed">
+              WIGO assemble les meilleures pépites locales pour <span className="text-slate-900">« {query} »</span>.
             </p>
           </motion.div>
         ) : data ? (
-          <div>
-            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, ease: "easeOut" }}>
-              <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-8">
-                <div className="flex-1">
-                  <h1 className="text-4xl md:text-7xl font-display font-extrabold text-slate-900 mb-6 tracking-tight leading-none">
-                    Destination : <span className="text-accent uppercase italic">{data.destination}</span>
-                  </h1>
-                  <p className="text-slate-500 text-xl font-medium max-w-2xl leading-relaxed">
-                    Votre escapade sur mesure pour <em className="text-slate-800 not-italic border-b-2 border-accent/30 tracking-tight">« {data.intent} »</em>.
-                  </p>
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-16 items-start">
+            {/* Sidebar : Destination Intelligence */}
+            <aside className="lg:col-span-4 lg:sticky lg:top-32 space-y-12">
+              <div className="space-y-8">
+                <div className="inline-flex items-center gap-2 px-3 py-1 bg-accent/5 border border-accent/10 rounded-full text-[10px] font-black uppercase tracking-[0.2em] text-accent">
+                   <Sparkles className="w-3 h-3" /> WIGO Intelligence
                 </div>
-
-                {data.cityInsight && (
-                  <div className="space-y-16 mt-12 bg-slate-50/50 p-8 md:p-16 rounded-[4rem] border border-slate-200/50">
-                    {/* Header Experience */}
-                    <div className="flex flex-col md:flex-row gap-12 items-start">
-                      <div className="flex-1 space-y-6">
-                        <div className="flex items-center gap-3 text-accent font-black uppercase tracking-[0.3em] text-xs">
-                          <Compass className="w-5 h-5" /> EXPÉRIENCE ÉLITE
-                        </div>
-                        <h2 className="text-4xl md:text-5xl font-display font-black text-slate-900 tracking-tight leading-tight">
-                          Le Guide Immersion <span className="text-accent italic">WIGO</span>
-                        </h2>
-                        <p className="text-slate-600 text-xl leading-relaxed font-medium">
-                          &quot;{data.cityInsight.description}&quot;
-                        </p>
-                      </div>
-                      
-                      <div className="flex-1 grid grid-cols-1 gap-4">
-                        {data.cityInsight.highlights.map((h, i) => (
-                          <motion.div 
-                            key={i} 
-                            initial={{ opacity: 0, x: 20 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            transition={{ delay: 0.1 * i }}
-                            className="flex items-center gap-4 bg-white p-6 rounded-3xl border border-slate-100 shadow-sm hover:shadow-md transition-shadow"
-                          >
-                            <div className="w-10 h-10 bg-accent/10 rounded-xl flex items-center justify-center text-accent">
-                              <Sparkles className="w-5 h-5" />
-                            </div>
-                            <span className="text-slate-800 font-bold text-lg">{h}</span>
-                          </motion.div>
-                        ))}
-                      </div>
-                    </div>
-
-                    {/* Grid Categories */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-                      {/* Restaurants */}
-                      {data.cityInsight.restaurants?.length ? (
-                        <div className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm hover:translate-y-[-4px] transition-transform">
-                          <Utensils className="w-8 h-8 text-orange-500 mb-6" />
-                          <h3 className="text-xl font-black mb-4">Gastronomie</h3>
-                          <div className="space-y-4">
-                            {data.cityInsight.restaurants.map((r, i) => (
-                              <div key={i} className="border-l-2 border-orange-100 pl-4 py-1">
-                                <p className="font-bold text-slate-900">{r.name}</p>
-                                <p className="text-xs text-slate-500 uppercase font-black tracking-widest">{r.specialty} • {r.vibe}</p>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      ) : null}
-
-                      {/* Atypical */}
-                      {data.cityInsight.atypical?.length ? (
-                        <div className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm hover:translate-y-[-4px] transition-transform">
-                          <Camera className="w-8 h-8 text-indigo-500 mb-6" />
-                          <h3 className="text-xl font-black mb-4">Lieux Insolites</h3>
-                          <div className="space-y-4">
-                            {data.cityInsight.atypical.map((a, i) => (
-                              <div key={i} className="border-l-2 border-indigo-100 pl-4 py-1">
-                                <p className="font-bold text-slate-900">{a.name}</p>
-                                <p className="text-xs text-slate-500 font-medium leading-tight">{a.description}</p>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      ) : null}
-
-                      {/* Culture */}
-                      {data.cityInsight.culture?.length ? (
-                        <div className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm hover:translate-y-[-4px] transition-transform">
-                          <Landmark className="w-8 h-8 text-blue-500 mb-6" />
-                          <h3 className="text-xl font-black mb-4">Culture</h3>
-                          <div className="space-y-4">
-                            {data.cityInsight.culture.map((c, i) => (
-                              <div key={i} className="border-l-2 border-blue-100 pl-4 py-1">
-                                <p className="font-bold text-slate-900">{c.name}</p>
-                                <p className="text-xs text-slate-500 uppercase font-bold">{c.type}</p>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      ) : null}
-
-                      {/* Nature */}
-                      {data.cityInsight.nature?.length ? (
-                        <div className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm hover:translate-y-[-4px] transition-transform">
-                          <Palmtree className="w-8 h-8 text-emerald-500 mb-6" />
-                          <h3 className="text-xl font-black mb-4">Parcs</h3>
-                          <div className="space-y-4">
-                            {data.cityInsight.nature.map((n, i) => (
-                              <div key={i} className="border-l-2 border-emerald-100 pl-4 py-1">
-                                <p className="font-bold text-slate-900">{n.name}</p>
-                                <p className="text-xs text-slate-500 font-medium italic">{n.vibe}</p>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      ) : null}
-                    </div>
-                  </div>
-                )}
-              </div>
-            </motion.div>
-
-            {/* Flights Section */}
-            <motion.section 
-              initial={{ opacity: 0, y: 30 }} 
-              animate={{ opacity: 1, y: 0 }} 
-              transition={{ duration: 0.6, delay: 0.1, ease: "easeOut" }}
-              className="mb-14"
-            >
-              <h2 className="text-2xl font-bold flex items-center gap-3 mb-6 text-slate-900">
-                <div className="w-10 h-10 rounded-xl bg-accent/10 flex items-center justify-center border border-accent/20 shadow-sm">
-                  <Plane className="w-5 h-5 text-accent" />
-                </div>
-                Le Vol Suggéré
-              </h2>
-              {data.flights.length > 0 ? (
-                <div className="grid gap-4">
-                  <FlightResultCard flight={data.flights[0]} isSelected={true} />
-                </div>
-              ) : (
-                <p className="text-slate-500 italic bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">Aucun vol trouvé depuis votre aéroport par défaut pour ces dates.</p>
-              )}
-            </motion.section>
-
-            {/* Hotels Section */}
-            <motion.section 
-              initial={{ opacity: 0, y: 30 }} 
-              animate={{ opacity: 1, y: 0 }} 
-              transition={{ duration: 0.6, delay: 0.2, ease: "easeOut" }}
-              className="mb-14"
-            >
-              <h2 className="text-2xl font-bold flex items-center gap-3 mb-6 text-slate-900">
-                <div className="w-10 h-10 rounded-xl bg-emerald-500/10 flex items-center justify-center border border-emerald-500/20 shadow-sm">
-                  <HotelIcon className="w-5 h-5 text-emerald-600" />
-                </div>
-                Le Nid Parfait
-              </h2>
-              {data.hotels.length > 0 ? (
-                <div className="grid md:grid-cols-2 gap-6">
-                  {data.hotels.map((h, i) => (
-                    <motion.div key={h.id} initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.3 + (i * 0.1) }}>
-                      <SearchResultCard 
-                        hotel={h} 
-                        isActive={selectedHotel?.id === h.id} 
-                        onSelect={() => {}} 
-                        onBook={() => setSelectedHotel(h)} 
-                      />
-                    </motion.div>
+                <h1 className="text-5xl md:text-8xl font-display font-black text-slate-900 tracking-tighter leading-[0.85] italic">
+                  {data.destination}
+                </h1>
+                <p className="text-slate-500 text-xl font-medium leading-relaxed border-l-2 border-accent/20 pl-6 py-2 italic font-serif">
+                  &quot;{data.cityInsight?.description}&quot;
+                </p>
+                <div className="pt-4 flex flex-wrap gap-2">
+                  {data.cityInsight?.highlights.map((h, i) => (
+                    <span key={i} className="text-[10px] font-black uppercase tracking-widest bg-slate-100 text-slate-500 px-4 py-2 rounded-full border border-slate-200">
+                      {h}
+                    </span>
                   ))}
                 </div>
-              ) : (
-                <p className="text-slate-500 italic bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">Aucun hôtel trouvé selon vos critères.</p>
-              )}
-            </motion.section>
-            
-            {/* Activities Section */}
-            <motion.section
-              initial={{ opacity: 0, y: 30 }} 
-              animate={{ opacity: 1, y: 0 }} 
-              transition={{ duration: 0.6, delay: 0.3, ease: "easeOut" }}
-            >
-              <h2 className="text-2xl font-bold flex items-center gap-3 mb-6 text-slate-900">
-                <div className="w-10 h-10 rounded-xl bg-purple-500/10 flex items-center justify-center border border-purple-500/20 shadow-sm">
-                  <MapPin className="w-5 h-5 text-purple-600" />
-                </div>
-                L&apos;Incontournable
-              </h2>
-              {data.activities.length > 0 ? (
-                 <div className="grid md:grid-cols-3 gap-6">
-                 {data.activities.map((act, i) => (
-                   <motion.div 
-                      key={act.id} 
-                      initial={{ opacity: 0, scale: 0.95 }} 
-                      animate={{ opacity: 1, scale: 1 }} 
-                      transition={{ delay: 0.4 + (i * 0.1) }}
-                      whileHover={{ y: -5, transition: { duration: 0.2 } }}
-                      className="bg-white border border-slate-200 shadow-sm hover:shadow-xl rounded-2xl overflow-hidden cursor-pointer hover:border-purple-500/40 transition-all duration-300 group"
-                   >
-                      <div className="h-48 bg-slate-100 relative overflow-hidden">
-                         {act.imageUrl ? (
-                           // eslint-disable-next-line @next/next/no-img-element
-                           <img src={act.imageUrl} alt={act.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
-                         ) : (
-                           <div className="w-full h-full flex items-center justify-center text-slate-400">
-                              <MapPin className="w-8 h-8 opacity-20" />
-                           </div>
-                         )}
-                         <div className="absolute top-3 right-3 bg-white/90 backdrop-blur-md px-3 py-1.5 rounded-lg text-xs font-bold text-slate-900 border border-slate-200 shadow-sm">
-                            {act.price}
+              </div>
+            </aside>
+
+            {/* Main Content : The Experience */}
+            <main className="lg:col-span-8 space-y-32">
+              {/* Bento Grid Experience */}
+              {data.cityInsight && (
+                <section>
+                  <div className="flex items-center justify-between mb-12">
+                    <h2 className="text-xs font-black uppercase tracking-[0.4em] text-slate-400">Immersion Elite</h2>
+                    <div className="h-px flex-1 bg-slate-100 ml-8" />
+                  </div>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-4 auto-rows-[300px] gap-6">
+                    {/* Restaurants (Large/Atypical Focus) */}
+                    <motion.div 
+                      whileHover={{ y: -5 }}
+                      className="md:col-span-2 md:row-span-2 bg-slate-900 rounded-[3rem] p-10 text-white flex flex-col justify-between relative overflow-hidden group shadow-2xl shadow-slate-200"
+                    >
+                      <div className="absolute top-0 right-0 p-12 opacity-10 group-hover:scale-110 transition-transform duration-700">
+                        <Utensils className="w-48 h-48" />
+                      </div>
+                      <div className="relative z-10">
+                        <div className="w-12 h-12 bg-white/10 backdrop-blur-md rounded-2xl flex items-center justify-center mb-8">
+                          <Utensils className="w-6 h-6 text-white" />
+                        </div>
+                        <h3 className="text-3xl font-display font-black mb-6 uppercase italic tracking-tighter">Table d&apos;Exception</h3>
+                        <div className="space-y-6">
+                          {data.cityInsight.restaurants?.map((r, i) => (
+                            <div key={i} className="group/item">
+                              <p className="text-xl font-bold text-white group-hover/item:text-accent transition-colors">{r.name}</p>
+                              <p className="text-xs font-black text-slate-500 uppercase tracking-widest">{r.specialty} • {r.vibe}</p>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                      <div className="relative z-10 text-xs font-black text-accent tracking-[0.3em] uppercase group-hover:translate-x-2 transition-transform">
+                        Explorez la Gastronomie →
+                      </div>
+                    </motion.div>
+
+                    {/* Atypical (Tall/Vertical) */}
+                    <motion.div 
+                      whileHover={{ y: -5 }}
+                      className="md:col-span-2 md:row-span-1 bg-accent rounded-[3rem] p-10 text-white relative overflow-hidden group shadow-2xl shadow-accent/20"
+                    >
+                      <div className="absolute -bottom-4 -right-4 opacity-20 group-hover:scale-110 transition-transform">
+                        <Camera className="w-32 h-32" />
+                      </div>
+                      <div className="relative z-10 flex flex-col h-full justify-between">
+                         <div>
+                            <div className="w-10 h-10 bg-white/20 backdrop-blur-md rounded-xl flex items-center justify-center mb-4 text-white">
+                              <Camera className="w-5 h-5" />
+                            </div>
+                            <h3 className="text-2xl font-display font-black uppercase italic tracking-tighter">Le Secret WIGO</h3>
+                         </div>
+                         <div className="space-y-4">
+                            {data.cityInsight.atypical?.slice(0, 1).map((a, i) => (
+                              <div key={i}>
+                                <p className="text-lg font-bold">{a.name}</p>
+                                <p className="text-xs font-medium text-white/80 line-clamp-2">{a.description}</p>
+                              </div>
+                            ))}
                          </div>
                       </div>
-                      <div className="p-5">
-                         <h3 className="font-bold text-slate-900 text-lg mb-2 truncate group-hover:text-purple-600 transition-colors">{act.name}</h3>
-                         <p className="text-sm text-slate-500 line-clamp-2 mb-4 leading-relaxed">{act.description}</p>
-                         <button className="text-sm bg-purple-100 hover:bg-purple-600 text-purple-700 hover:text-white font-bold py-2.5 px-4 rounded-xl w-full transition-colors shadow-sm">
-                           Réserver l&apos;expérience
-                         </button>
-                      </div>
-                   </motion.div>
-                 ))}
-               </div>
-              ) : (
-                <p className="text-slate-500 italic bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">Aucune activité trouvée dans cette zone.</p>
-              )}
-            </motion.section>
+                    </motion.div>
 
+                    {/* Culture (Square) */}
+                    <motion.div 
+                       whileHover={{ y: -5 }}
+                       className="md:col-span-1 md:row-span-1 bg-white border border-slate-100 rounded-[3rem] p-8 shadow-xl shadow-slate-200/50 flex flex-col justify-between group"
+                    >
+                       <div className="w-12 h-12 bg-blue-50 rounded-2xl flex items-center justify-center text-blue-600 mb-4 group-hover:scale-110 transition-transform">
+                          <Landmark className="w-6 h-6" />
+                       </div>
+                       <div>
+                          <h3 className="text-lg font-black uppercase tracking-tighter mb-4 italic">Arts & Culture</h3>
+                          <div className="space-y-2">
+                             {data.cityInsight.culture?.slice(0, 2).map((c, i) => (
+                                <p key={i} className="text-xs font-bold text-slate-900 border-b border-slate-100 pb-2">{c.name}</p>
+                             ))}
+                          </div>
+                       </div>
+                    </motion.div>
+
+                    {/* Nature (Square) */}
+                    <motion.div 
+                       whileHover={{ y: -5 }}
+                       className="md:col-span-1 md:row-span-1 bg-emerald-50 content-highlight border border-emerald-100 rounded-[3rem] p-8 flex flex-col justify-between group"
+                    >
+                       <div className="w-12 h-12 bg-emerald-600 rounded-2xl flex items-center justify-center text-white mb-4 group-hover:scale-110 transition-transform">
+                          <Palmtree className="w-6 h-6" />
+                       </div>
+                       <div>
+                          <h3 className="text-lg font-black uppercase tracking-tighter mb-4 italic text-emerald-900">Espaces Verts</h3>
+                          <div className="space-y-2 text-emerald-800">
+                             {data.cityInsight.nature?.slice(0, 2).map((n, i) => (
+                                <p key={i} className="text-xs font-bold border-b border-emerald-200 pb-2">{n.name}</p>
+                             ))}
+                          </div>
+                       </div>
+                    </motion.div>
+                  </div>
+                </section>
+              )}
+
+              {/* The Travel Package (Flight + Hotels) */}
+              <section className="space-y-24">
+                 {/* Suggested Flight */}
+                 <div className="relative">
+                    <div className="flex items-center gap-6 mb-12">
+                       <Plane className="w-12 h-12 text-slate-200" />
+                       <h2 className="text-4xl font-display font-black text-slate-900 tracking-tighter italic">Ligne de Vol <span className="text-accent underline decoration-4 decoration-accent/20">Directe</span></h2>
+                    </div>
+                    {data.flights.length > 0 ? (
+                      <FlightResultCard flight={data.flights[0]} isSelected={true} />
+                    ) : (
+                      <div className="p-12 bg-slate-50 rounded-[3rem] border-2 border-dashed border-slate-200 text-center text-slate-400 font-bold uppercase tracking-widest text-sm">
+                        Connexion Sol uniquement
+                      </div>
+                    )}
+                 </div>
+
+                 {/* Top Hotels */}
+                 <div>
+                    <div className="flex items-center justify-between mb-12">
+                       <div className="flex items-center gap-6">
+                          <HotelIcon className="w-12 h-12 text-slate-200" />
+                          <h2 className="text-4xl font-display font-black text-slate-900 tracking-tighter italic">Demures d&apos;Exception</h2>
+                       </div>
+                       <div className="text-xs font-black uppercase tracking-widest text-accent border border-accent/20 px-6 py-3 rounded-full">
+                          {data.hotels.length} Pépites Trouvées
+                       </div>
+                    </div>
+                    <div className="grid md:grid-cols-2 gap-8">
+                      {data.hotels.slice(0, 8).map((h, i) => (
+                        <motion.div 
+                          key={h.id} 
+                          initial={{ opacity: 0, y: 30 }} 
+                          animate={{ opacity: 1, y: 0 }} 
+                          transition={{ delay: 0.1 * i }}
+                        >
+                          <SearchResultCard 
+                            hotel={h} 
+                            isActive={selectedHotel?.id === h.id} 
+                            onSelect={() => {}} 
+                            onBook={() => setSelectedHotel(h)} 
+                          />
+                        </motion.div>
+                      ))}
+                    </div>
+                 </div>
+              </section>
+
+              {/* Activities Section */}
+              <section>
+                 <div className="flex items-center gap-6 mb-12">
+                    <MapPin className="w-12 h-12 text-slate-200" />
+                    <h2 className="text-4xl font-display font-black text-slate-900 tracking-tighter italic">Expériences <span className="text-purple-500">Signature</span></h2>
+                 </div>
+                 
+                 {data.activities.length > 0 ? (
+                    <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    {data.activities.slice(0, 6).map((act, i) => (
+                      <motion.div 
+                         key={act.id} 
+                         initial={{ opacity: 0, scale: 0.95 }} 
+                         animate={{ opacity: 1, scale: 1 }} 
+                         transition={{ delay: i * 0.1 }}
+                         whileHover={{ y: -8, transition: { duration: 0.4, ease: "circOut" } }}
+                         className="bg-white border border-slate-100 shadow-2xl shadow-slate-200/50 rounded-[2.5rem] overflow-hidden cursor-pointer group flex flex-col h-full"
+                      >
+                         <div className="h-64 bg-slate-100 relative overflow-hidden">
+                            {act.imageUrl ? (
+                              // eslint-disable-next-line @next/next/no-img-element
+                              <img src={act.imageUrl} alt={act.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-1000" />
+                            ) : (
+                              <div className="w-full h-full flex items-center justify-center text-slate-300">
+                                 <MapPin className="w-12 h-12" />
+                              </div>
+                            )}
+                            <div className="absolute top-6 right-6 bg-white/90 backdrop-blur-md px-5 py-2 rounded-2xl text-xs font-black text-slate-900 shadow-xl border border-white/20">
+                               {act.price}
+                            </div>
+                         </div>
+                         <div className="p-8 flex flex-col flex-1 justify-between">
+                            <div>
+                               <h3 className="font-display font-black text-slate-900 text-2xl mb-3 leading-tight uppercase italic tracking-tighter group-hover:text-accent transition-colors">{act.name}</h3>
+                               <p className="text-sm text-slate-500 line-clamp-3 mb-8 leading-relaxed font-medium">{act.description}</p>
+                            </div>
+                            <button className="text-[10px] font-black uppercase tracking-widest bg-slate-900 text-white py-4 rounded-2xl w-full transition-all hover:bg-accent hover:shadow-xl active:scale-95 shadow-md">
+                              Réserver l&apos;Expérience
+                            </button>
+                         </div>
+                      </motion.div>
+                    ))}
+                  </div>
+                 ) : (
+                   <div className="p-20 bg-slate-50 rounded-[3rem] border border-slate-100 text-center text-slate-300 font-bold uppercase tracking-widest text-xs">
+                     Horizon en cours d&apos;exploration
+                   </div>
+                 )}
+              </section>
+            </main>
           </div>
         ) : (
           <div className="text-center py-20 text-slate-500 bg-white rounded-3xl border border-slate-200 shadow-sm">

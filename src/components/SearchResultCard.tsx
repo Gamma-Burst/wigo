@@ -36,9 +36,8 @@ export default function SearchResultCard({ hotel, isActive, onSelect, onBook }: 
         <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            whileHover={{ y: -4, scale: 1.01 }}
-            transition={{ duration: 0.3 }}
-            className={`group card-3d bg-white dark:bg-[#141412] rounded-2xl overflow-hidden border transition-all duration-300 cursor-pointer ${isActive ? 'border-accent shadow-[0_0_30px_rgba(232,101,42,0.2)]' : 'border-white/5 hover:border-white/15'}`}
+            whileHover={{ y: -4, transition: { duration: 0.3 } }}
+            className={`group bg-white rounded-[2rem] overflow-hidden border transition-all duration-500 cursor-pointer ${isActive ? 'border-accent shadow-2xl shadow-accent/10' : 'border-slate-100 shadow-xl shadow-slate-200/40 hover:shadow-2xl hover:shadow-slate-200 hover:border-slate-200'}`}
             onClick={onSelect}
         >
             <div className="flex flex-col md:flex-row">

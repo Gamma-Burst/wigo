@@ -5,11 +5,6 @@ import Footer from "@/components/Footer";
 import AIChat from "@/components/AIChat";
 import "./globals.css";
 
-const geistSans = localFont({
-  src: "./fonts/GeistVF.woff",
-  variable: "--font-geist-sans",
-  weight: "100 900",
-});
 const geistMono = localFont({
   src: "./fonts/GeistMonoVF.woff",
   variable: "--font-geist-mono",
@@ -56,9 +51,9 @@ export default function RootLayout({
           }}
         />
       </head>
-      <body className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen flex flex-col`}>
+      <body className={`${geistMono.variable} antialiased min-h-screen flex flex-col noise-overlay`}>
         <Navbar />
-        <main className="pt-16 flex-grow">
+        <main className="pt-20 flex-grow">
           {children}
         </main>
         <Footer />
