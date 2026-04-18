@@ -6,21 +6,9 @@
 import { HotelResult } from "@/components/SearchResultCard";
 import { SearchFilters } from "./ai-filters";
 import { amadeusGet, getDefaultCheckIn, getDefaultCheckOut } from "./amadeus-client";
+import { getHotelPhotosWithFallback, FALLBACK_IMAGES } from "./photo-provider";
 
 const HOTEL_MARKUP = 1.10; // Marge de 10% pour WIGO (Ajusté de 15%)
-
-const IMAGES = [
-  "https://images.unsplash.com/photo-1542718610-a1d656d1884c?w=800&q=80",
-  "https://images.unsplash.com/photo-1551882547-ff40c63fe5fa?w=800&q=80",
-  "https://images.unsplash.com/photo-1571003123894-1f0594d2b5d9?w=800&q=80",
-  "https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=800&q=80",
-  "https://images.unsplash.com/photo-1445019980597-93fa8acb246c?w=800&q=80",
-  "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800&q=80",
-  "https://images.unsplash.com/photo-1590490360182-c33d57733427?w=800&q=80",
-  "https://images.unsplash.com/photo-1518780664697-55e3ad937233?w=800&q=80",
-  "https://images.unsplash.com/photo-1455587734955-081b22074882?w=800&q=80",
-  "https://images.unsplash.com/photo-1631049307264-da0ec9d70304?w=800&q=80",
-];
 
 const CITY_IATA: Record<string, string> = {
   "bruxelles": "BRU", "brussels": "BRU", "liege": "LGG", "liège": "LGG",
@@ -159,7 +147,7 @@ async function getHotelOffers(hotelIds: string[], checkIn?: string, checkOut?: s
         id: h.hotelId,
         name: h.name.split(" ").map((w) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(" "),
         price: `${wigoPriceNum}€ / nuit`,
-        imageUrl: IMAGES[imgIndex % IMAGES.length],
+        imageUrl: FALLBACK_IMAGES[imgIndex % FALLBACK_IMAGES.length],
         vibeScore,
         tags: h.amenities?.slice(0, 5) || ["Wi-Fi", "WIGO Selected"],
         lat: h.latitude, lng: h.longitude,
@@ -173,9 +161,9 @@ async function getHotelOffers(hotelIds: string[], checkIn?: string, checkOut?: s
         city: cityName || h.cityCode || "",
         allAmenities: h.amenities || [],
         images: [
-           IMAGES[imgIndex % IMAGES.length],
-           IMAGES[(imgIndex + 1) % IMAGES.length],
-           IMAGES[(imgIndex + 2) % IMAGES.length]
+           FALLBACK_IMAGES[imgIndex % FALLBACK_IMAGES.length],
+           FALLBACK_IMAGES[(imgIndex + 1) % FALLBACK_IMAGES.length],
+           FALLBACK_IMAGES[(imgIndex + 2) % FALLBACK_IMAGES.length]
         ],
         roomType,
         roomDescription,
@@ -189,6 +177,21 @@ async function getHotelOffers(hotelIds: string[], checkIn?: string, checkOut?: s
       imgIndex++;
     });
   }
+
+  // ─── Enrich top hotels with real Google Places photos ─────────────────────
+  const TOP_N = 10; // Only fetch photos for the first 10 to control costs
+  const photoBatch = allResults.slice(0, TOP_N).map(async (hotel, i) => {
+    try {
+      const photos = await getHotelPhotosWithFallback(hotel.name, cityName || "", i);
+      hotel.imageUrl = photos[0];
+      hotel.images = photos;
+    } catch {
+      // Keep fallback images if photo fetch fails
+    }
+  });
+
+  await Promise.allSettled(photoBatch);
+
   return allResults;
 }
 
