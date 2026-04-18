@@ -15,7 +15,8 @@ interface ActivityModalProps {
   onClose: () => void;
 }
 
-const getCategoryIcon = (category: string) => {
+const getCategoryIcon = (category?: string) => {
+  if (!category) return <Sparkles className="w-5 h-5" />;
   const c = category.toLowerCase();
   if (c.includes('nature') || c.includes('hiking')) return <Palmtree className="w-5 h-5" />;
   if (c.includes('culture') || c.includes('attractions')) return <Landmark className="w-5 h-5" />;
@@ -104,17 +105,17 @@ export default function ActivityModal({ activity, isOpen, onClose }: ActivityMod
                     {getCategoryIcon(activity.category)}
                   </div>
                   <span className="text-xs font-black uppercase tracking-widest text-slate-400">
-                    {activity.category}
+                    {activity.category || "Découverte"}
                   </span>
                 </div>
 
                 <div className="flex items-center gap-2 text-amber-500 bg-amber-50 px-5 py-3 rounded-2xl border border-amber-100">
                   <Star className="w-5 h-5 fill-current" />
-                  <span className="text-lg font-black">{activity.rating}</span>
+                  <span className="text-lg font-black">{activity.rating || "4.5"}</span>
                 </div>
 
                 <div className="text-2xl font-display font-black text-slate-900 bg-slate-900/5 px-5 py-3 rounded-2xl border border-slate-900/5 ml-auto">
-                    {activity.price}
+                    {activity.price || "Sur demande"}
                 </div>
               </div>
 
@@ -125,7 +126,7 @@ export default function ActivityModal({ activity, isOpen, onClose }: ActivityMod
                       <h4 className="text-xs font-black uppercase tracking-[0.2em]">Description</h4>
                    </div>
                    <p className="text-slate-500 leading-relaxed font-medium text-lg">
-                    {activity.description}
+                    {activity.description || "Une expérience unique sélectionnée par l'expertise WIGO pour agrémenter votre voyage."}
                   </p>
                 </div>
 
