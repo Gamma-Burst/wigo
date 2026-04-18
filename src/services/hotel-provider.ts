@@ -8,7 +8,7 @@ import { SearchFilters } from "./ai-filters";
 import { amadeusGet, getDefaultCheckIn, getDefaultCheckOut } from "./amadeus-client";
 import { getHotelPhotosWithFallback, FALLBACK_IMAGES } from "./photo-provider";
 
-const HOTEL_MARKUP = 1.10; // Marge de 10% pour WIGO (Ajusté de 15%)
+const HOTEL_MARKUP = 1.00; // Pas de marge — revenus via affiliation Booking.com
 
 const CITY_IATA: Record<string, string> = {
   "bruxelles": "BRU", "brussels": "BRU", "liege": "LGG", "liège": "LGG",

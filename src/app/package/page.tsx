@@ -132,7 +132,8 @@ function PackageContent() {
                     {/* Restaurants (Large/Atypical Focus) */}
                     <motion.div 
                       whileHover={{ y: -5 }}
-                      className="md:col-span-2 md:row-span-2 bg-slate-900 rounded-[3rem] p-10 text-white flex flex-col justify-between relative overflow-hidden group shadow-2xl shadow-slate-200"
+                      onClick={() => window.open(`https://www.google.com/maps/search/restaurants+${encodeURIComponent(data.destination)}`, '_blank')}
+                      className="md:col-span-2 md:row-span-2 bg-slate-900 rounded-[3rem] p-10 text-white flex flex-col justify-between relative overflow-hidden group shadow-2xl shadow-slate-200 cursor-pointer"
                     >
                       <div className="absolute top-0 right-0 p-12 opacity-10 group-hover:scale-110 transition-transform duration-700">
                         <Utensils className="w-48 h-48" />
@@ -159,7 +160,8 @@ function PackageContent() {
                     {/* Atypical (Tall/Vertical) */}
                     <motion.div 
                       whileHover={{ y: -5 }}
-                      className="md:col-span-2 md:row-span-1 bg-accent rounded-[3rem] p-10 text-white relative overflow-hidden group shadow-2xl shadow-accent/20"
+                      onClick={() => window.open(`https://www.google.com/maps/search/lieux+insolites+${encodeURIComponent(data.destination)}`, '_blank')}
+                      className="md:col-span-2 md:row-span-1 bg-accent rounded-[3rem] p-10 text-white relative overflow-hidden group shadow-2xl shadow-accent/20 cursor-pointer"
                     >
                       <div className="absolute -bottom-4 -right-4 opacity-20 group-hover:scale-110 transition-transform">
                         <Camera className="w-32 h-32" />
@@ -185,7 +187,8 @@ function PackageContent() {
                     {/* Culture (Square) */}
                     <motion.div 
                        whileHover={{ y: -5 }}
-                       className="md:col-span-1 md:row-span-1 bg-white border border-slate-100 rounded-[3rem] p-8 shadow-xl shadow-slate-200/50 flex flex-col justify-between group"
+                       onClick={() => window.open(`https://www.google.com/maps/search/mus%C3%A9es+culture+${encodeURIComponent(data.destination)}`, '_blank')}
+                       className="md:col-span-1 md:row-span-1 bg-white border border-slate-100 rounded-[3rem] p-8 shadow-xl shadow-slate-200/50 flex flex-col justify-between group cursor-pointer"
                     >
                        <div className="w-12 h-12 bg-blue-50 rounded-2xl flex items-center justify-center text-blue-600 mb-4 group-hover:scale-110 transition-transform">
                           <Landmark className="w-6 h-6" />
@@ -203,7 +206,8 @@ function PackageContent() {
                     {/* Nature (Square) */}
                     <motion.div 
                        whileHover={{ y: -5 }}
-                       className="md:col-span-1 md:row-span-1 bg-emerald-50 content-highlight border border-emerald-100 rounded-[3rem] p-8 flex flex-col justify-between group"
+                       onClick={() => window.open(`https://www.google.com/maps/search/parcs+jardins+${encodeURIComponent(data.destination)}`, '_blank')}
+                       className="md:col-span-1 md:row-span-1 bg-emerald-50 content-highlight border border-emerald-100 rounded-[3rem] p-8 flex flex-col justify-between group cursor-pointer"
                     >
                        <div className="w-12 h-12 bg-emerald-600 rounded-2xl flex items-center justify-center text-white mb-4 group-hover:scale-110 transition-transform">
                           <Palmtree className="w-6 h-6" />
