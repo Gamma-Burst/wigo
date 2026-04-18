@@ -54,11 +54,27 @@ const COORDS: Record<string, { lat: number; lng: number }> = {
   "ostende": { lat: 51.2154, lng: 2.9270 }, "oostende": { lat: 51.2154, lng: 2.9270 }
 };
 
-export function getCoords(location: string): { lat: number; lng: number } {
+export async function getGeoCoords(location: string): Promise<{ lat: number; lng: number } | null> {
   const l = location.toLowerCase().trim();
   for (const [key, coords] of Object.entries(COORDS)) {
     if (l.includes(key)) return coords;
   }
+  
+  // Real Geocoding fallback
+  try {
+    const GOOGLE_API_KEY = process.env.GOOGLE_MAPS_API_KEY || process.env.GOOGLE_API_KEY;
+    if (!GOOGLE_API_KEY) return { lat: 38.7223, lng: -9.1393 }; // Ultimate Lisbon fallback if no keys configured
+    
+    const res = await fetch(`https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(location)}&key=${GOOGLE_API_KEY}`);
+    const data = await res.json();
+    if (data.results && data.results.length > 0) {
+      const geo = data.results[0].geometry.location;
+      return { lat: geo.lat, lng: geo.lng };
+    }
+  } catch (error) {
+    console.error("[Geocoding] Error:", error);
+  }
+  
   return { lat: 38.7223, lng: -9.1393 }; // Défaut Lisbonne
 }
 
@@ -199,11 +215,13 @@ export async function searchHotels(filters: SearchFilters): Promise<EnhancedHote
   let lat = filters.latitude;
   let lng = filters.longitude;
 
-  // Si l'IA ne renvoie pas de latitude/longitude, utilise le fallback local (cities dictionary)
+  // Si l'IA ne renvoie pas de latitude/longitude, utilise le Geocoding dynamique
   if (!lat || !lng) {
-    const coords = getCoords(filters.location);
-    lat = coords.lat;
-    lng = coords.lng;
+    const coords = await getGeoCoords(filters.location);
+    if (coords) {
+      lat = coords.lat;
+      lng = coords.lng;
+    }
   }
 
   if (lat && lng) {
