@@ -9,6 +9,7 @@ import { motion } from "framer-motion";
 import Link from "next/link";
 import { ActivityResult } from "@/app/api/search-activities/route";
 import HotelModal from "@/components/HotelModal";
+import InsiderModal from "@/components/InsiderModal";
 import type { EnhancedHotelResult } from "@/services/hotel-provider";
 
 export default function PackagePage() {
@@ -25,6 +26,7 @@ function PackageContent() {
   
   const [loading, setLoading] = useState(true);
   const [selectedHotel, setSelectedHotel] = useState<EnhancedHotelResult | null>(null);
+  const [insiderCategory, setInsiderCategory] = useState<"restaurants" | "atypical" | "culture" | "nature" | null>(null);
   const [data, setData] = useState<{
     destination: string;
     intent: string;
@@ -132,7 +134,7 @@ function PackageContent() {
                     {/* Restaurants (Large/Atypical Focus) */}
                     <motion.div 
                       whileHover={{ y: -5 }}
-                      onClick={() => window.open(`https://www.google.com/maps/search/restaurants+${encodeURIComponent(data.destination)}`, '_blank')}
+                      onClick={() => setInsiderCategory("restaurants")}
                       className="md:col-span-2 md:row-span-2 bg-slate-900 rounded-[3rem] p-10 text-white flex flex-col justify-between relative overflow-hidden group shadow-2xl shadow-slate-200 cursor-pointer"
                     >
                       <div className="absolute top-0 right-0 p-12 opacity-10 group-hover:scale-110 transition-transform duration-700">
@@ -160,7 +162,7 @@ function PackageContent() {
                     {/* Atypical (Tall/Vertical) */}
                     <motion.div 
                       whileHover={{ y: -5 }}
-                      onClick={() => window.open(`https://www.google.com/maps/search/lieux+insolites+${encodeURIComponent(data.destination)}`, '_blank')}
+                      onClick={() => setInsiderCategory("atypical")}
                       className="md:col-span-2 md:row-span-1 bg-accent rounded-[3rem] p-10 text-white relative overflow-hidden group shadow-2xl shadow-accent/20 cursor-pointer"
                     >
                       <div className="absolute -bottom-4 -right-4 opacity-20 group-hover:scale-110 transition-transform">
@@ -187,7 +189,7 @@ function PackageContent() {
                     {/* Culture (Square) */}
                     <motion.div 
                        whileHover={{ y: -5 }}
-                       onClick={() => window.open(`https://www.google.com/maps/search/mus%C3%A9es+culture+${encodeURIComponent(data.destination)}`, '_blank')}
+                       onClick={() => setInsiderCategory("culture")}
                        className="md:col-span-1 md:row-span-1 bg-white border border-slate-100 rounded-[3rem] p-8 shadow-xl shadow-slate-200/50 flex flex-col justify-between group cursor-pointer"
                     >
                        <div className="w-12 h-12 bg-blue-50 rounded-2xl flex items-center justify-center text-blue-600 mb-4 group-hover:scale-110 transition-transform">
@@ -206,7 +208,7 @@ function PackageContent() {
                     {/* Nature (Square) */}
                     <motion.div 
                        whileHover={{ y: -5 }}
-                       onClick={() => window.open(`https://www.google.com/maps/search/parcs+jardins+${encodeURIComponent(data.destination)}`, '_blank')}
+                       onClick={() => setInsiderCategory("nature")}
                        className="md:col-span-1 md:row-span-1 bg-emerald-50 content-highlight border border-emerald-100 rounded-[3rem] p-8 flex flex-col justify-between group cursor-pointer"
                     >
                        <div className="w-12 h-12 bg-emerald-600 rounded-2xl flex items-center justify-center text-white mb-4 group-hover:scale-110 transition-transform">
@@ -335,6 +337,15 @@ function PackageContent() {
         hotel={selectedHotel} 
         onClose={() => setSelectedHotel(null)} 
       />
+      {data && data.cityInsight && (
+        <InsiderModal
+          isOpen={!!insiderCategory}
+          onClose={() => setInsiderCategory(null)}
+          category={insiderCategory}
+          insightData={data.cityInsight}
+          destination={data.destination}
+        />
+      )}
     </div>
   );
 }
