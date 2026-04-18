@@ -1,7 +1,7 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { NextResponse } from "next/server";
 import { searchActivities } from "@/services/activity-provider";
-import { getCoords } from "@/services/hotel-provider";
+import { getCoordsForCity } from "@/services/hotel-provider";
 
 const apiKey = process.env.GOOGLE_API_KEY;
 
@@ -129,13 +129,13 @@ const CITY_COORDS: Record<string, { lat: number; lng: number }> = {
     "barcelona": { lat: 41.3874, lng: 2.1686 }, "barcelone": { lat: 41.3874, lng: 2.1686 },
 };
 
-function resolveCoords(query: string, location: string): { lat: number; lng: number } | null {
+async function resolveCoords(query: string, location: string): Promise<{ lat: number; lng: number } | null> {
     const text = `${query} ${location}`.toLowerCase();
     for (const [key, coords] of Object.entries(CITY_COORDS)) {
         if (text.includes(key)) return coords;
     }
-    // Try hotel-provider getCoords as last resort
-    const fromProvider = getCoords(location);
+    // Try hotel-provider getCoordsForCity as last resort
+    const fromProvider = await getCoordsForCity(location);
     if (fromProvider) return fromProvider;
     return null;
 }
@@ -147,7 +147,7 @@ export async function POST(req: Request) {
     if (!query) return NextResponse.json({ error: "Query required" }, { status: 400 });
 
     // ─── Step 1: Try REAL Amadeus data first ──────────────────────────────────
-    const coords = resolveCoords(query, location);
+    const coords = await resolveCoords(query, location);
     
     if (coords) {
         try {
