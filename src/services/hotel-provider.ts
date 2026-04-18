@@ -277,8 +277,10 @@ async function getGooglePlacesHotels(location: string, lat: number, lng: number)
       results.push({
         id: place.id,
         name: place.displayName?.text || "Gîte de Charme",
-        latitude: place.location?.latitude || lat,
-        longitude: place.location?.longitude || lng,
+        lat: place.location?.latitude || lat,
+        lng: place.location?.longitude || lng,
+        vibeScore: Math.round(75 + Math.random() * 20),
+        tags: ["WIGO Select", "Nature", "Calme"],
         price: `${mockPrice} €`,
         priceNum: mockPrice,
         currency: "EUR",
