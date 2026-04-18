@@ -106,6 +106,8 @@ export interface EnhancedHotelResult extends HotelResult {
   cancellationDescription?: string;
   priceBase?: string;
   priceTaxes?: string;
+  provider?: string;
+  bookingLink?: string;
 }
 
 async function getHotelIds(lat: number, lng: number): Promise<string[]> {
