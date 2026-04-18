@@ -9,6 +9,7 @@ import { motion } from "framer-motion";
 import Link from "next/link";
 import { ActivityResult } from "@/app/api/search-activities/route";
 import HotelModal from "@/components/HotelModal";
+import ActivityModal from "@/components/ActivityModal";
 import InsiderModal from "@/components/InsiderModal";
 import type { EnhancedHotelResult } from "@/services/hotel-provider";
 
@@ -26,6 +27,7 @@ function PackageContent() {
   
   const [loading, setLoading] = useState(true);
   const [selectedHotel, setSelectedHotel] = useState<EnhancedHotelResult | null>(null);
+  const [selectedActivity, setSelectedActivity] = useState<ActivityResult | null>(null);
   const [insiderCategory, setInsiderCategory] = useState<"restaurants" | "atypical" | "culture" | "nature" | null>(null);
   const [data, setData] = useState<{
     destination: string;
@@ -291,14 +293,7 @@ function PackageContent() {
                           animate={{ opacity: 1, scale: 1 }} 
                           transition={{ delay: i * 0.1 }}
                           whileHover={{ y: -8, transition: { duration: 0.4, ease: "circOut" } }}
-                          onClick={() => {
-                            if (act.website) {
-                              window.open(act.website, '_blank');
-                            } else {
-                              const searchQuery = encodeURIComponent(`${act.name} ${data.destination || ''}`);
-                              window.open(`https://www.google.com/search?q=${searchQuery}`, '_blank');
-                            }
-                          }}
+                          onClick={() => setSelectedActivity(act)}
                           className="bg-white border border-slate-100 shadow-2xl shadow-slate-200/50 rounded-[2.5rem] overflow-hidden cursor-pointer group flex flex-col h-full"
                        >
                          <div className="h-64 bg-slate-100 relative overflow-hidden">
@@ -344,6 +339,11 @@ function PackageContent() {
         isOpen={!!selectedHotel} 
         hotel={selectedHotel} 
         onClose={() => setSelectedHotel(null)} 
+      />
+      <ActivityModal
+        isOpen={!!selectedActivity}
+        activity={selectedActivity}
+        onClose={() => setSelectedActivity(null)}
       />
       {data && data.cityInsight && (
         <InsiderModal
