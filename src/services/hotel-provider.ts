@@ -236,4 +236,4 @@ export async function searchHotels(filters: SearchFilters): Promise<EnhancedHote
 export async function getHotelRatings(hotelIds: string[]): Promise<unknown[]> { return []; }
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 export async function bookHotel(request: unknown): Promise<unknown> { return { success: true }; }
-export { getCoords as getCoordsForCity };
+export { getGeoCoords as getCoordsForCity };
