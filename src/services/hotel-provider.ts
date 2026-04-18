@@ -6,7 +6,7 @@
 import { HotelResult } from "@/components/SearchResultCard";
 import { SearchFilters } from "./ai-filters";
 import { amadeusGet, getDefaultCheckIn, getDefaultCheckOut } from "./amadeus-client";
-import { getHotelPhotosWithFallback, FALLBACK_IMAGES, getHotelPhotos } from "./photo-provider";
+import { getHotelPhotosWithFallback, FALLBACK_IMAGES } from "./photo-provider";
 
 const HOTEL_MARKUP = 1.00; // Pas de marge — revenus via affiliation Booking.com
 
@@ -263,7 +263,6 @@ async function getGooglePlacesHotels(location: string, lat: number, lng: number)
     if (!data.places || data.places.length === 0) return [];
 
     const results: EnhancedHotelResult[] = [];
-    let imgIndex = 0;
 
     for (const place of data.places.slice(0, 8)) {
       const mockPrice = 85 + Math.floor(Math.random() * 150); // Prix estimé rural
