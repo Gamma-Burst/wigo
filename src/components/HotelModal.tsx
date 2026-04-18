@@ -53,13 +53,38 @@ export default function HotelModal({ hotel, isOpen, onClose }: HotelModalProps) 
   const images = hotel.images && hotel.images.length > 0 ? hotel.images : [hotel.imageUrl];
 
   const handleBookingRedirect = () => {
-    const searchQuery = encodeURIComponent(`${hotel.name}, ${hotel.city || ''}`);
-    const aid = process.env.NEXT_PUBLIC_BOOKING_AFFILIATE_ID;
-    let url = `https://www.booking.com/searchresults.fr.html?ss=${searchQuery}`;
-    if (aid) url += `&aid=${aid}`;
-    if (hotel.checkIn && hotel.checkOut) url += `&checkin=${hotel.checkIn}&checkout=${hotel.checkOut}`;
-    if (hotel.guests) url += `&group_adults=${hotel.guests}&no_rooms=1`;
-    window.open(url, '_blank');
+    const hotelName = `${hotel.name}${hotel.city ? ', ' + hotel.city : ''}`;
+    const aid = process.env.NEXT_PUBLIC_BOOKING_AFFILIATE_ID || '304142';
+    const ts = Date.now();
+    
+    // Build Booking.com URL with GPS coordinates for precise matching
+    const params = new URLSearchParams({
+      ss: hotelName,
+      dest_type: 'hotel',
+      sb: '1',
+      src: 'searchresults',
+      selected_currency: 'EUR',
+      sb_travel_purpose: 'leisure',
+      nflt: '',                        // Clear previous filters
+      label: `wigo-direct-${ts}`,      // Unique label to bust cookie cache
+      aid: aid,
+    });
+    
+    // Add GPS coordinates for precise location matching
+    if (hotel.lat && hotel.lng) {
+      params.set('latitude', hotel.lat.toString());
+      params.set('longitude', hotel.lng.toString());
+    }
+    
+    // Add dates if available
+    if (hotel.checkIn) params.set('checkin', hotel.checkIn);
+    if (hotel.checkOut) params.set('checkout', hotel.checkOut);
+    if (hotel.guests) {
+      params.set('group_adults', hotel.guests.toString());
+      params.set('no_rooms', '1');
+    }
+    
+    window.open(`https://www.booking.com/searchresults.fr.html?${params.toString()}`, '_blank');
   };
 
   const nextImg = () => setCurrentImg((prev) => (prev + 1) % images.length);
