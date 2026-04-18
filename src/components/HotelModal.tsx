@@ -53,38 +53,37 @@ export default function HotelModal({ hotel, isOpen, onClose }: HotelModalProps) 
   const images = hotel.images && hotel.images.length > 0 ? hotel.images : [hotel.imageUrl];
 
   const handleBookingRedirect = () => {
-    const hotelName = `${hotel.name}${hotel.city ? ', ' + hotel.city : ''}`;
+    // Use ONLY the hotel name for ss — city is provided via GPS coords
+    // Booking.com often fails when city is appended to hotel name
     const aid = process.env.NEXT_PUBLIC_BOOKING_AFFILIATE_ID || '304142';
     const ts = Date.now();
     
-    // Build Booking.com URL with GPS coordinates for precise matching
-    const params = new URLSearchParams({
-      ss: hotelName,
-      dest_type: 'hotel',
-      sb: '1',
-      src: 'searchresults',
-      selected_currency: 'EUR',
-      sb_travel_purpose: 'leisure',
-      nflt: '',                        // Clear previous filters
-      label: `wigo-direct-${ts}`,      // Unique label to bust cookie cache
-      aid: aid,
-    });
+    // Build URL manually to avoid URLSearchParams encoding issues with Booking.com
+    const parts: string[] = [
+      `ss=${encodeURIComponent(hotel.name)}`,
+      `dest_type=hotel`,
+      `sb=1`,
+      `src=searchresults`,
+      `selected_currency=EUR`,
+      `label=wigo-${ts}`,
+      `aid=${aid}`,
+    ];
     
     // Add GPS coordinates for precise location matching
     if (hotel.lat && hotel.lng) {
-      params.set('latitude', hotel.lat.toString());
-      params.set('longitude', hotel.lng.toString());
+      parts.push(`latitude=${hotel.lat}`);
+      parts.push(`longitude=${hotel.lng}`);
     }
     
-    // Add dates if available
-    if (hotel.checkIn) params.set('checkin', hotel.checkIn);
-    if (hotel.checkOut) params.set('checkout', hotel.checkOut);
+    // Add dates
+    if (hotel.checkIn) parts.push(`checkin=${hotel.checkIn}`);
+    if (hotel.checkOut) parts.push(`checkout=${hotel.checkOut}`);
     if (hotel.guests) {
-      params.set('group_adults', hotel.guests.toString());
-      params.set('no_rooms', '1');
+      parts.push(`group_adults=${hotel.guests}`);
+      parts.push(`no_rooms=1`);
     }
     
-    window.open(`https://www.booking.com/searchresults.fr.html?${params.toString()}`, '_blank');
+    window.open(`https://www.booking.com/searchresults.fr.html?${parts.join('&')}`, '_blank');
   };
 
   const nextImg = () => setCurrentImg((prev) => (prev + 1) % images.length);

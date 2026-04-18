@@ -84,13 +84,11 @@ function ReservationContent() {
         e.preventDefault();
         setLoading(true);
         setTimeout(() => {
-            // Build Booking.com deep link with cache-busting params
-            // Use dest_type=hotel and selected_currency + label to bypass cookie-based old searches
-            const hotelQuery = encodeURIComponent(name + (location ? ", " + location : ""));
+            // Build Booking.com deep link — use ONLY hotel name (not city) to avoid search failures
             const timestamp = Date.now();
             const bookingUrl = [
               `https://www.booking.com/searchresults.fr.html`,
-              `?ss=${hotelQuery}`,
+              `?ss=${encodeURIComponent(name)}`,
               `&checkin=${checkIn}`,
               `&checkout=${checkOut}`,
               `&group_adults=${adults}`,
@@ -100,9 +98,7 @@ function ReservationContent() {
               `&sb=1`,
               `&src=searchresults`,
               `&selected_currency=EUR`,
-              `&sb_travel_purpose=leisure`,
-              `&nflt=`,                          // Force clear all filters
-              `&label=wigo-${timestamp}`,         // Unique label to bust Booking cache
+              `&label=wigo-${timestamp}`,
               `&aid=304142`,
             ].join("");
             setLoading(false);
