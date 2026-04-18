@@ -94,6 +94,14 @@ export interface EnhancedHotelResult extends HotelResult {
   city?: string;
   allAmenities?: string[];
   images?: string[];
+  roomType?: string;
+  roomDescription?: string;
+  bedType?: string;
+  beds?: number;
+  cancellationType?: string;
+  cancellationDescription?: string;
+  priceBase?: string;
+  priceTaxes?: string;
 }
 
 async function getHotelIds(lat: number, lng: number): Promise<string[]> {
@@ -124,16 +132,39 @@ async function getHotelOffers(hotelIds: string[], checkIn?: string, checkOut?: s
       const amadeusPrice = offer?.price?.total ? parseFloat(offer.price.total) : 0;
       const wigoPriceNum = Math.ceil(amadeusPrice * HOTEL_MARKUP);
 
+      // Extract room details from Amadeus
+      const room = offer?.room;
+      const roomType = room?.typeEstimated?.category || undefined;
+      const beds = room?.typeEstimated?.beds || undefined;
+      const bedType = room?.typeEstimated?.bedType || undefined;
+      const roomDescription = room?.description?.text || undefined;
+
+      // Extract cancellation policy
+      const cancellation = offer?.policies?.cancellation;
+      const cancellationType = cancellation?.type || undefined;
+      const cancellationDescription = cancellation?.description?.text || undefined;
+
+      // Price breakdown
+      const priceBase = offer?.price?.base || undefined;
+      const priceTaxes = (offer?.price?.total && offer?.price?.base)
+        ? (parseFloat(offer.price.total) - parseFloat(offer.price.base)).toFixed(2)
+        : undefined;
+
+      // Calculate a dynamic vibe score based on rating + amenities count
+      const ratingVal = h.rating ? parseInt(h.rating) : 3;
+      const amenityBonus = Math.min((h.amenities?.length || 0) * 2, 20);
+      const vibeScore = Math.min(Math.round(ratingVal * 16 + amenityBonus), 99);
+
       allResults.push({
         id: h.hotelId,
         name: h.name.split(" ").map((w) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(" "),
         price: `${wigoPriceNum}€ / nuit`,
         imageUrl: IMAGES[imgIndex % IMAGES.length],
-        vibeScore: 90,
-        tags: h.amenities?.slice(0, 3) || ["Wi-Fi", "WIGO Selected"],
+        vibeScore,
+        tags: h.amenities?.slice(0, 5) || ["Wi-Fi", "WIGO Selected"],
         lat: h.latitude, lng: h.longitude,
         priceNum: wigoPriceNum,
-        hotelRating: h.rating ? parseInt(h.rating) : 3,
+        hotelRating: ratingVal,
         weather: "sunny",
         offerId: offer?.id,
         checkIn: ci,
@@ -145,7 +176,15 @@ async function getHotelOffers(hotelIds: string[], checkIn?: string, checkOut?: s
            IMAGES[imgIndex % IMAGES.length],
            IMAGES[(imgIndex + 1) % IMAGES.length],
            IMAGES[(imgIndex + 2) % IMAGES.length]
-        ]
+        ],
+        roomType,
+        roomDescription,
+        bedType,
+        beds,
+        cancellationType,
+        cancellationDescription,
+        priceBase,
+        priceTaxes,
       } as EnhancedHotelResult);
       imgIndex++;
     });

@@ -1,5 +1,7 @@
-﻿import { GoogleGenerativeAI } from "@google/generative-ai";
+import { GoogleGenerativeAI } from "@google/generative-ai";
 import { NextResponse } from "next/server";
+import { searchActivities } from "@/services/activity-provider";
+import { getCoords } from "@/services/hotel-provider";
 
 const apiKey = process.env.GOOGLE_API_KEY;
 
@@ -20,6 +22,7 @@ export interface ActivityResult {
     website?: string;
     lat?: number;
     lng?: number;
+    source?: "amadeus" | "ai" | "fallback";
 }
 
 const CATEGORY_IMAGES: Record<string, string[]> = {
@@ -109,8 +112,32 @@ function getFallbackResults(query: string, category: string, location: string): 
         website: undefined,
         lat: 50.4 + Math.random() * 0.5,
         lng: 4.0 + Math.random() * 1.5,
+        source: "fallback" as const,
         ...item,
     } as ActivityResult));
+}
+
+// ─── City DB for coordinate resolution ────────────────────────────────────────
+const CITY_COORDS: Record<string, { lat: number; lng: number }> = {
+    "bruxelles": { lat: 50.8503, lng: 4.3517 }, "liege": { lat: 50.6326, lng: 5.5797 },
+    "liège": { lat: 50.6326, lng: 5.5797 }, "namur": { lat: 50.4674, lng: 4.8719 },
+    "bruges": { lat: 51.2093, lng: 3.2247 }, "gand": { lat: 51.0543, lng: 3.7174 },
+    "anvers": { lat: 51.2194, lng: 4.4025 }, "spa": { lat: 50.4927, lng: 5.8647 },
+    "durbuy": { lat: 50.3531, lng: 5.4566 }, "dinant": { lat: 50.2611, lng: 4.9119 },
+    "paris": { lat: 48.8566, lng: 2.3522 }, "amsterdam": { lat: 52.3676, lng: 4.9041 },
+    "london": { lat: 51.5074, lng: -0.1278 }, "rome": { lat: 41.9028, lng: 12.4964 },
+    "barcelona": { lat: 41.3874, lng: 2.1686 }, "barcelone": { lat: 41.3874, lng: 2.1686 },
+};
+
+function resolveCoords(query: string, location: string): { lat: number; lng: number } | null {
+    const text = `${query} ${location}`.toLowerCase();
+    for (const [key, coords] of Object.entries(CITY_COORDS)) {
+        if (text.includes(key)) return coords;
+    }
+    // Try hotel-provider getCoords as last resort
+    const fromProvider = getCoords(location);
+    if (fromProvider) return fromProvider;
+    return null;
 }
 
 export async function POST(req: Request) {
@@ -119,8 +146,45 @@ export async function POST(req: Request) {
 
     if (!query) return NextResponse.json({ error: "Query required" }, { status: 400 });
 
+    // ─── Step 1: Try REAL Amadeus data first ──────────────────────────────────
+    const coords = resolveCoords(query, location);
+    
+    if (coords) {
+        try {
+            console.log(`[ACTIVITIES] Searching Amadeus at ${coords.lat}, ${coords.lng} for "${query}"`);
+            const amadeusResults = await searchActivities(coords.lat, coords.lng, 30);
+            
+            if (amadeusResults.length > 0) {
+                console.log(`[ACTIVITIES] Found ${amadeusResults.length} real Amadeus results`);
+                const imgs = CATEGORY_IMAGES[category] || CATEGORY_IMAGES.nature;
+                
+                const mapped: ActivityResult[] = amadeusResults.slice(0, 8).map((act, i) => ({
+                    id: act.id,
+                    name: act.name,
+                    category: category as ActivityResult["category"],
+                    description: act.description || "Activité recommandée par WIGO via Amadeus.",
+                    address: location,
+                    price: act.price,
+                    imageUrl: act.imageUrl || imgs[i % imgs.length],
+                    rating: act.rating,
+                    tags: ["Amadeus Vérifié", act.duration || "Activité"].filter(Boolean),
+                    duration: act.duration || undefined,
+                    website: act.bookingLink || undefined,
+                    lat: act.lat,
+                    lng: act.lng,
+                    source: "amadeus" as const,
+                }));
+                
+                return NextResponse.json({ results: mapped, source: "amadeus" });
+            }
+        } catch (err) {
+            console.error("[ACTIVITIES] Amadeus search failed, falling back:", err);
+        }
+    }
+
+    // ─── Step 2: Fallback to Gemini AI enrichment ─────────────────────────────
     if (!apiKey) {
-        return NextResponse.json({ results: getFallbackResults(query, category, location) });
+        return NextResponse.json({ results: getFallbackResults(query, category, location), source: "fallback" });
     }
 
     try {
@@ -158,11 +222,12 @@ Règles importantes:
         parsed.results = parsed.results.map((r: ActivityResult, i: number) => ({
             ...r,
             imageUrl: imgs[i % imgs.length],
+            source: "ai",
         }));
 
-        return NextResponse.json(parsed);
+        return NextResponse.json({ ...parsed, source: "ai" });
     } catch (err) {
         console.error("Gemini activity search error:", err);
-        return NextResponse.json({ results: getFallbackResults(query, category, location) });
+        return NextResponse.json({ results: getFallbackResults(query, category, location), source: "fallback" });
     }
 }

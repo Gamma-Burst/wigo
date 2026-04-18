@@ -6,7 +6,7 @@ import {
   X, MapPin, CheckCircle, ExternalLink, Info, 
   Wifi, Coffee, Utensils, CigaretteOff, Car, Dumbbell, Shield, 
   ChevronLeft, ChevronRight, TrendingUp,
-  Award, Heart, AlertCircle
+  Award, Heart, AlertCircle, Bed, BanknoteIcon, ShieldCheck
 } from 'lucide-react';
 
 interface HotelModalProps {
@@ -179,6 +179,48 @@ export default function HotelModal({ hotel, isOpen, onClose }: HotelModalProps) 
                      ))}
                   </div>
 
+                  {/* Room Details from Amadeus */}
+                  {(hotel.roomType || hotel.beds || hotel.roomDescription) && (
+                    <div className="bg-white/[0.03] border border-white/10 rounded-[2rem] p-8 space-y-4">
+                      <h3 className="text-lg font-black text-white flex items-center gap-3">
+                        <Bed className="w-5 h-5 text-accent" />
+                        Détails de la chambre
+                      </h3>
+                      <div className="flex flex-wrap gap-4">
+                        {hotel.roomType && (
+                          <div className="bg-white/5 px-4 py-2 rounded-xl text-sm text-white/70">
+                            <span className="text-white/30 text-[10px] uppercase font-black block mb-1">Type</span>
+                            {hotel.roomType.replace(/_/g, ' ').toLowerCase().replace(/\b\w/g, c => c.toUpperCase())}
+                          </div>
+                        )}
+                        {hotel.beds && hotel.bedType && (
+                          <div className="bg-white/5 px-4 py-2 rounded-xl text-sm text-white/70">
+                            <span className="text-white/30 text-[10px] uppercase font-black block mb-1">Couchage</span>
+                            {hotel.beds} × {hotel.bedType.replace(/_/g, ' ').toLowerCase()}
+                          </div>
+                        )}
+                        {hotel.cancellationType && (
+                          <div className={`px-4 py-2 rounded-xl text-sm flex items-center gap-2 ${
+                            hotel.cancellationType === 'FULL_STAY' ? 'bg-red-500/10 text-red-400 border border-red-500/20' :
+                            hotel.cancellationType === 'FREE' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' :
+                            'bg-yellow-500/10 text-yellow-400 border border-yellow-500/20'
+                          }`}>
+                            <ShieldCheck className="w-4 h-4" />
+                            <div>
+                              <span className="text-[10px] uppercase font-black block mb-0.5 opacity-60">Annulation</span>
+                              {hotel.cancellationType === 'FULL_STAY' ? 'Non remboursable' :
+                               hotel.cancellationType === 'FREE' ? 'Annulation gratuite' :
+                               hotel.cancellationType.replace(/_/g, ' ').toLowerCase()}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                      {hotel.roomDescription && (
+                        <p className="text-white/30 text-sm leading-relaxed mt-2">{hotel.roomDescription}</p>
+                      )}
+                    </div>
+                  )}
+
                   {/* Why Section */}
                   <div className="grid lg:grid-cols-2 gap-12 pt-8">
                      <div className="space-y-6">
@@ -193,7 +235,7 @@ export default function HotelModal({ hotel, isOpen, onClose }: HotelModalProps) 
                         </p>
                         
                         <div className="flex flex-wrap gap-3">
-                           {hotel.allAmenities?.slice(0, 10).map((tag, i) => (
+                           {hotel.allAmenities?.map((tag, i) => (
                              <div key={i} className="flex items-center gap-2 bg-white/5 border border-white/5 px-4 py-2.5 rounded-2xl text-[11px] font-bold text-white/50 hover:bg-white/10 hover:text-white transition-all cursor-default">
                                 {getAmenityIcon(tag)}
                                 {tag.toLowerCase().replace(/_/g, ' ')}
@@ -245,8 +287,12 @@ export default function HotelModal({ hotel, isOpen, onClose }: HotelModalProps) 
                            <div className="text-white/20 text-2xl font-black uppercase tracking-widest line-through decoration-accent/40 decoration-4">{Math.round(totalPrice * 1.15)}€</div>
                         </div>
                         <div className="bg-neutral-800/80 border border-white/5 p-4 rounded-2xl inline-flex items-center gap-4">
+                           <BanknoteIcon className="w-4 h-4 text-white/30" />
                            <div className="text-[10px] font-black text-white/40 uppercase tracking-[0.2em] px-2 border-r border-white/10">Détail du Pass</div>
                            <div className="text-sm font-black text-white">{hotel.priceNum}€ <span className="text-white/30 font-bold">/ nuit</span> × {nights} nuits</div>
+                           {hotel.priceTaxes && (
+                             <div className="text-[10px] text-white/20 border-l border-white/10 pl-4">dont {hotel.priceTaxes}€ taxes</div>
+                           )}
                         </div>
                      </div>
 
