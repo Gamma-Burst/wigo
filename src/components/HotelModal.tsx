@@ -13,6 +13,7 @@ interface HotelModalProps {
   hotel: EnhancedHotelResult | null;
   isOpen: boolean;
   onClose: () => void;
+  onBook?: (hotel: EnhancedHotelResult) => void;
 }
 
 const getAmenityIcon = (amenity: string) => {
@@ -26,7 +27,7 @@ const getAmenityIcon = (amenity: string) => {
   return <CheckCircle className="w-4 h-4" />;
 };
 
-export default function HotelModal({ hotel, isOpen, onClose }: HotelModalProps) {
+export default function HotelModal({ hotel, isOpen, onClose, onBook }: HotelModalProps) {
   const [currentImg, setCurrentImg] = useState(0);
   
   useEffect(() => {
@@ -53,9 +54,14 @@ export default function HotelModal({ hotel, isOpen, onClose }: HotelModalProps) 
   const images = hotel.images && hotel.images.length > 0 ? hotel.images : [hotel.imageUrl];
 
   const handleBookingRedirect = () => {
-    // Use ONLY the hotel name for ss — city is provided via GPS coords
-    // Booking.com often fails when city is appended to hotel name
+    if (onBook && hotel) {
+      onBook(hotel);
+      return;
+    }
+    
+    // Fallback if no native booking provided
     const aid = process.env.NEXT_PUBLIC_BOOKING_AFFILIATE_ID || '304142';
+//... (keep existing logic below as fallback)
     const ts = Date.now();
     
     // Build URL manually to avoid URLSearchParams encoding issues with Booking.com
@@ -338,12 +344,25 @@ export default function HotelModal({ hotel, isOpen, onClose }: HotelModalProps) 
                         </motion.button>
 
                         <div className="flex items-center justify-center gap-6 text-white/20">
-                           <div className="flex items-center gap-2 text-[9px] font-black uppercase tracking-widest">
-                              <AlertCircle className="w-3 h-3" /> Transparence Affiliation
-                           </div>
-                           <div className="text-[9px] font-bold opacity-40">
-                              WIGO — Comparateur Indépendant Partenaire Booking.com
-                           </div>
+                           {onBook ? (
+                             <>
+                               <div className="flex items-center gap-2 text-[9px] font-black uppercase tracking-widest text-emerald-500/50">
+                                  <ShieldCheck className="w-3 h-3" /> Réservation Directe WIGO
+                               </div>
+                               <div className="text-[9px] font-bold opacity-40">
+                                   Paiement sécurisé — Conciergerie Elite Nomadic
+                               </div>
+                             </>
+                           ) : (
+                             <>
+                               <div className="flex items-center gap-2 text-[9px] font-black uppercase tracking-widest">
+                                  <AlertCircle className="w-3 h-3" /> Transparence Affiliation
+                               </div>
+                               <div className="text-[9px] font-bold opacity-40">
+                                   WIGO — Comparateur Indépendant Partenaire Booking.com
+                               </div>
+                             </>
+                           )}
                         </div>
                      </div>
                   </div>

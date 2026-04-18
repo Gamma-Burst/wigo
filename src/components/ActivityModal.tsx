@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { 
   X, MapPin, Star, ExternalLink, 
   Palmtree, Landmark, ShoppingBag, Music, 
-  Utensils, Sparkles, Clock
+  Utensils, Sparkles, Clock, ShieldCheck
 } from 'lucide-react';
 import { ActivityResult } from '@/app/api/search-activities/route';
 
@@ -13,6 +13,7 @@ interface ActivityModalProps {
   activity: ActivityResult | null;
   isOpen: boolean;
   onClose: () => void;
+  onBook?: (activity: ActivityResult) => void;
 }
 
 const getCategoryIcon = (category?: string) => {
@@ -26,7 +27,7 @@ const getCategoryIcon = (category?: string) => {
   return <Sparkles className="w-5 h-5" />;
 };
 
-export default function ActivityModal({ activity, isOpen, onClose }: ActivityModalProps) {
+export default function ActivityModal({ activity, isOpen, onClose, onBook }: ActivityModalProps) {
   
   useEffect(() => {
     if (isOpen) {
@@ -39,6 +40,11 @@ export default function ActivityModal({ activity, isOpen, onClose }: ActivityMod
   if (!activity) return null;
 
   const handleBookingRedirect = () => {
+    if (onBook && activity) {
+      onBook(activity);
+      return;
+    }
+
     if (activity.website) {
       window.open(activity.website, '_blank');
     } else {
@@ -167,9 +173,20 @@ export default function ActivityModal({ activity, isOpen, onClose }: ActivityMod
                     Réserver l&apos;Expérience
                     <ExternalLink className="w-5 h-5 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
                   </button>
-                  <p className="text-center text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-6">
-                    Redirection sécurisée vers la plateforme officielle
-                  </p>
+                  {onBook ? (
+                    <div className="flex flex-col items-center gap-2 mt-6">
+                      <div className="flex items-center gap-2 text-[10px] text-emerald-600 font-black uppercase tracking-widest">
+                        <ShieldCheck className="w-3 h-3" /> Conciergerie WIGO — Paiement Sécurisé
+                      </div>
+                      <p className="text-[9px] text-slate-400 font-bold uppercase tracking-widest">
+                        Gestion en direct par nos services
+                      </p>
+                    </div>
+                  ) : (
+                    <p className="text-center text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-6">
+                      Redirection sécurisée vers la plateforme officielle
+                    </p>
+                  )}
                 </div>
               </div>
             </div>

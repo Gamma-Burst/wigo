@@ -26,9 +26,36 @@ model User {
   
   // Relations
   savedHotels   SavedHotel[]
+  bookings      Booking[]
   
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
+}
+
+// Model pour les réservations natives
+model Booking {
+  id              String   @id @default(cuid())
+  userId          String
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  type            String   // "HOTEL" ou "ACTIVITY"
+  itemId          String   // ID de l'hôtel ou de l'activité
+  title           String   // Nom de l'hôtel ou de l'activité
+  amount          Float
+  currency        String   @default("EUR")
+  status          String   @default("PENDING") // PENDING, PAID, CONFIRMED, CANCELLED
+  
+  // Détails voyageurs (Concierge)
+  customerName    String?
+  customerEmail   String?
+  customerPhone   String?
+  
+  paymentIntentId String?  @unique
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([userId])
 }
 
 // Les hôtels sauvegardés dans l'historique de l'utilisateur

@@ -11,6 +11,7 @@ import { ActivityResult } from "@/app/api/search-activities/route";
 import HotelModal from "@/components/HotelModal";
 import ActivityModal from "@/components/ActivityModal";
 import InsiderModal from "@/components/InsiderModal";
+import CheckoutModal from "@/components/CheckoutModal";
 import type { EnhancedHotelResult } from "@/services/hotel-provider";
 
 export default function PackagePage() {
@@ -28,6 +29,7 @@ function PackageContent() {
   const [loading, setLoading] = useState(true);
   const [selectedHotel, setSelectedHotel] = useState<EnhancedHotelResult | null>(null);
   const [selectedActivity, setSelectedActivity] = useState<ActivityResult | null>(null);
+  const [checkoutItem, setCheckoutItem] = useState<{ id: string, title: string, price: string, amount: number, type: 'HOTEL' | 'ACTIVITY', imageUrl?: string } | null>(null);
   const [insiderCategory, setInsiderCategory] = useState<"restaurants" | "atypical" | "culture" | "nature" | null>(null);
   const [data, setData] = useState<{
     destination: string;
@@ -339,11 +341,32 @@ function PackageContent() {
         isOpen={!!selectedHotel} 
         hotel={selectedHotel} 
         onClose={() => setSelectedHotel(null)} 
+        onBook={(h) => setCheckoutItem({
+          id: h.id,
+          title: h.name,
+          price: h.price || "Calcul...",
+          amount: h.priceNum || 0,
+          type: 'HOTEL',
+          imageUrl: h.imageUrl
+        })}
       />
       <ActivityModal
         isOpen={!!selectedActivity}
         activity={selectedActivity}
         onClose={() => setSelectedActivity(null)}
+        onBook={(a) => setCheckoutItem({
+          id: a.id,
+          title: a.name,
+          price: a.price || "Gratuit",
+          amount: parseFloat(a.price?.replace(/[^\d.]/g, '') || '0') || 0,
+          type: 'ACTIVITY',
+          imageUrl: a.imageUrl
+        })}
+      />
+      <CheckoutModal 
+        isOpen={!!checkoutItem}
+        item={checkoutItem}
+        onClose={() => setCheckoutItem(null)}
       />
       {data && data.cityInsight && (
         <InsiderModal
