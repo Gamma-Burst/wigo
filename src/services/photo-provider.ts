@@ -55,8 +55,13 @@ export async function getHotelPhotos(
   }
 
   try {
+    // Clean hotel name from common suffixes that might confuse Google
+    const cleanHotelName = hotelName
+      .replace(/\s(h\u00f4tel|hotel|residence|resort|spa|lodging|inn)\b/gi, "")
+      .trim();
+
     // Step 1: Text Search to find the place
-    const searchRes = await fetch(
+    let searchRes = await fetch(
       "https://places.googleapis.com/v1/places:searchText",
       {
         method: "POST",
@@ -66,20 +71,38 @@ export async function getHotelPhotos(
           "X-Goog-FieldMask": "places.id,places.displayName,places.photos",
         },
         body: JSON.stringify({
-          textQuery: `${hotelName} hotel ${city}`,
+          textQuery: `${cleanHotelName} ${city}`,
           maxResultCount: 1,
           languageCode: "fr",
         }),
       }
     );
 
-    if (!searchRes.ok) {
-      console.error(`[PHOTOS] Places search failed [${searchRes.status}]`);
-      return [];
-    }
+    let data: PlaceSearchResult = await searchRes.json();
+    let place = data.places?.[0];
 
-    const data: PlaceSearchResult = await searchRes.json();
-    const place = data.places?.[0];
+    // Fallback: If no place found with city, try just the hotel name if it's unique enough
+    if (!place && cleanHotelName.length > 5) {
+      console.log(`[PHOTOS] Retrying without city for: ${cleanHotelName}`);
+      searchRes = await fetch(
+        "https://places.googleapis.com/v1/places:searchText",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "X-Goog-Api-Key": GOOGLE_API_KEY,
+            "X-Goog-FieldMask": "places.id,places.displayName,places.photos",
+          },
+          body: JSON.stringify({
+            textQuery: cleanHotelName,
+            maxResultCount: 1,
+            languageCode: "fr",
+          }),
+        }
+      );
+      data = await searchRes.json();
+      place = data.places?.[0];
+    }
 
     if (!place?.photos?.length) {
       console.log(`[PHOTOS] No photos found for "${hotelName}" in ${city}`);
@@ -88,7 +111,7 @@ export async function getHotelPhotos(
 
     // Step 2: Build photo URLs (Google Places API v1 format)
     const photoUrls = place.photos.slice(0, maxPhotos).map((photo) => {
-      return `https://places.googleapis.com/v1/${photo.name}/media?maxWidthPx=800&key=${GOOGLE_API_KEY}`;
+      return `https://places.googleapis.com/v1/${photo.name}/media?maxWidthPx=1200&key=${GOOGLE_API_KEY}`;
     });
 
     // Cache the result
