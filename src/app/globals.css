@@ -151,6 +151,25 @@ body {
     color-mix(in oklch, var(--card) 72%, oklch(0.88 0.03 160));
 }
 
+.premium-surface {
+  background: linear-gradient(180deg, color-mix(in oklch, var(--card) 96%, white) 0%, var(--card) 100%);
+  border: 1px solid var(--border-strong);
+  box-shadow:
+    0 24px 80px -48px oklch(0.18 0.015 60 / 0.22),
+    0 8px 24px -16px oklch(0.18 0.015 60 / 0.12);
+}
+
+.warm-section {
+  background:
+    radial-gradient(circle at top left, color-mix(in oklch, var(--accent) 10%, transparent), transparent 34%),
+    radial-gradient(circle at bottom right, color-mix(in oklch, var(--forest) 10%, transparent), transparent 32%),
+    linear-gradient(180deg, var(--background-warm) 0%, var(--background) 100%);
+}
+
+.accent-divider {
+  background: linear-gradient(90deg, transparent, var(--accent-glow), transparent);
+}
+
 /* ─── Scrollbar ────────────────────────────────────────────────────────────── */
 .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
 .scrollbar-hide::-webkit-scrollbar { display: none; }
