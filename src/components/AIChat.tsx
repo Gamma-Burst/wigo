@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { Fragment, useState, useRef, useEffect } from "react";
 import { X, Send, Sparkles, Bot, ChevronDown } from "lucide-react";
 
 interface Message {
@@ -54,7 +54,13 @@ export default function AIChat() {
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ messages: newMessages }),
             });
+            if (!res.ok) {
+                throw new Error("Chat unavailable");
+            }
             const data = await res.json();
+            if (!data.reply || typeof data.reply !== "string") {
+                throw new Error("Invalid chat response");
+            }
             const assistantMsg: Message = { role: "assistant", content: data.reply };
             setMessages((prev) => [...prev, assistantMsg]);
             if (!open) setUnread((n) => n + 1);
@@ -65,10 +71,21 @@ export default function AIChat() {
         }
     };
 
-    const formatMessage = (text: string) => {
-        return text
-            .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")
-            .replace(/\n/g, "<br/>");
+    const renderMessage = (text: string) => {
+        return text.split("\n").map((line, lineIndex, lines) => (
+            <Fragment key={`${line}-${lineIndex}`}>
+                {line.split(/(\*\*[^*]+\*\*)/g).filter(Boolean).map((part, partIndex) => {
+                    const isBold = part.startsWith("**") && part.endsWith("**");
+
+                    return isBold ? (
+                        <strong key={`${part}-${partIndex}`}>{part.slice(2, -2)}</strong>
+                    ) : (
+                        <Fragment key={`${part}-${partIndex}`}>{part}</Fragment>
+                    );
+                })}
+                {lineIndex < lines.length - 1 ? <br /> : null}
+            </Fragment>
+        ));
     };
 
     return (
@@ -123,8 +140,9 @@ export default function AIChat() {
                                             ? "bg-accent text-white rounded-br-sm"
                                             : "bg-foreground/5 text-foreground rounded-bl-sm border border-foreground/10"
                                         }`}
-                                    dangerouslySetInnerHTML={{ __html: formatMessage(msg.content) }}
-                                />
+                                >
+                                    {renderMessage(msg.content)}
+                                </div>
                             </div>
                         ))}
 

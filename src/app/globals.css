@@ -133,6 +133,24 @@ body {
   transform: scale(0.97);
 }
 
+.glass {
+  background: color-mix(in oklch, var(--card) 84%, transparent);
+  border: 1px solid var(--border-strong);
+  backdrop-filter: blur(18px);
+  box-shadow: 0 20px 60px -32px oklch(0.18 0.015 60 / 0.2);
+}
+
+.card-3d {
+  transform: translateZ(0);
+  backface-visibility: hidden;
+}
+
+.content-highlight {
+  background:
+    radial-gradient(circle at top right, color-mix(in oklch, var(--accent) 16%, transparent), transparent 45%),
+    color-mix(in oklch, var(--card) 72%, oklch(0.88 0.03 160));
+}
+
 /* ─── Scrollbar ────────────────────────────────────────────────────────────── */
 .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
 .scrollbar-hide::-webkit-scrollbar { display: none; }

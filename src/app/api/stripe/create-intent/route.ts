@@ -3,9 +3,10 @@ import { NextResponse } from 'next/server';
 import Stripe from 'stripe';
 import prisma from '@/utils/prisma';
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY as string, {
+const STRIPE_SECRET = process.env.STRIPE_SECRET_KEY;
+const stripe = STRIPE_SECRET ? new Stripe(STRIPE_SECRET, {
   apiVersion: '2023-10-16' as Stripe.StripeConfig['apiVersion'], 
-});
+}) : null;
 
 export async function POST(req: Request) {
   try {
@@ -23,6 +24,10 @@ export async function POST(req: Request) {
 
     if (!amount || !title || !type || !itemId) {
       return NextResponse.json({ error: "Données de réservation incomplètes." }, { status: 400 });
+    }
+
+    if (!stripe) {
+      return NextResponse.json({ error: "Le service de paiement n'est pas configuré." }, { status: 503 });
     }
 
     // 1. Create Stripe Payment Intent

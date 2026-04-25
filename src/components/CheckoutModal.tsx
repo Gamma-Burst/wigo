@@ -15,8 +15,9 @@ import {
   useElements,
 } from '@stripe/react-stripe-js';
 
-// Initialize Stripe
-const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!);
+// Initialize Stripe - safer initialization
+const STRIPE_KEY = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY;
+const stripePromise = STRIPE_KEY ? loadStripe(STRIPE_KEY) : null;
 
 // Deleted unused ActivityResult import
 
@@ -98,11 +99,17 @@ function CheckoutForm({ item, customerInfo, onComplete, onSecondaryAction }: {
         setError(confirmError.message || "Paiement échoué.");
       } else {
         // 3. Finalize Booking
-        await fetch('/api/complete-booking', {
+        const finalizeResponse = await fetch('/api/complete-booking', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ bookingId }),
         });
+
+        const finalizeData = await finalizeResponse.json();
+        if (!finalizeResponse.ok) {
+          throw new Error(finalizeData.error || "La confirmation de la réservation a échoué.");
+        }
+
         onComplete(bookingId);
       }
     } catch (err: unknown) {
@@ -160,16 +167,19 @@ function CheckoutForm({ item, customerInfo, onComplete, onSecondaryAction }: {
 export default function CheckoutModal({ isOpen, onClose, item }: CheckoutModalProps) {
   const [step, setStep] = useState(1);
   const [bookingId, setBookingId] = useState<string | null>(null);
+  const [blockingError, setBlockingError] = useState<string | null>(null);
   const [customerInfo, setCustomerInfo] = useState({
     name: '',
     email: '',
     phone: ''
   });
+  const [processing, setProcessing] = useState(false);
 
   useEffect(() => {
     if (isOpen) {
       setStep(1);
       setBookingId(null);
+      setBlockingError(null);
       document.body.style.overflow = 'hidden';
     } else {
       document.body.style.overflow = 'unset';
@@ -178,9 +188,50 @@ export default function CheckoutModal({ isOpen, onClose, item }: CheckoutModalPr
 
   if (!item) return null;
 
-  const handleNext = (e: React.FormEvent) => {
+  const progressLabel = step <= 2 ? `Étape ${step} sur 2` : step === 3 ? "Confirmation" : "Action requise";
+
+  const handleNext = async (e: React.FormEvent) => {
     e.preventDefault();
-    setStep(2);
+    
+    // Check for Stripe configuration if payment is needed
+    if (item.amount > 0 && !STRIPE_KEY) {
+      setStep(4); // Error step: Stripe not configured
+      return;
+    }
+
+    if (item.amount === 0) {
+      // Direct transition to success for "Sur demande" (Quote Request)
+      try {
+        setProcessing(true);
+        const res = await fetch('/api/complete-booking', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ 
+            bookingRequest: true,
+            title: item.title,
+            type: item.type,
+            itemId: item.id,
+            customerInfo
+          }),
+        });
+        const data = await res.json();
+
+        if (!res.ok) {
+          throw new Error(data.error || "La demande n'a pas pu être enregistrée.");
+        }
+
+        setBookingId(data.bookingId);
+        setStep(3);
+      } catch (err: unknown) {
+        console.error("Error creating booking request:", err);
+        setBlockingError(err instanceof Error ? err.message : "La demande n'a pas pu être finalisée.");
+        setStep(4);
+      } finally {
+        setProcessing(false);
+      }
+    } else {
+      setStep(2);
+    }
   };
 
   return (
@@ -208,7 +259,7 @@ export default function CheckoutModal({ isOpen, onClose, item }: CheckoutModalPr
                   Finaliser <span className="text-accent">Réservation</span>
                 </h2>
                 <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mt-1">
-                  Étape {step} sur 2 • {item.title}
+                  {progressLabel} • {item.title}
                 </p>
               </div>
               <button onClick={onClose} className="p-3 hover:bg-slate-50 rounded-full transition-colors">
@@ -265,9 +316,14 @@ export default function CheckoutModal({ isOpen, onClose, item }: CheckoutModalPr
 
                     <button
                       type="submit"
-                      className="w-full bg-slate-900 hover:bg-accent text-white py-5 rounded-2xl font-display font-black uppercase tracking-widest shadow-xl transition-all group flex items-center justify-center gap-4 mt-8"
+                      disabled={processing}
+                      className="w-full bg-slate-900 hover:bg-accent text-white py-5 rounded-2xl font-display font-black uppercase tracking-widest shadow-xl transition-all group flex items-center justify-center gap-4 mt-8 disabled:opacity-50"
                     >
-                      Détails de Paiement <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                      {processing ? (
+                        <Loader2 className="w-5 h-5 animate-spin" />
+                      ) : (
+                        <>Détails de Paiement <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" /></>
+                      )}
                     </button>
                   </form>
                 </motion.div>
@@ -275,24 +331,33 @@ export default function CheckoutModal({ isOpen, onClose, item }: CheckoutModalPr
 
               {step === 2 && (
                 <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }}>
-                  <Elements stripe={stripePromise} options={{ 
-                    mode: 'payment', 
-                    amount: Math.round(item.amount * 100), 
-                    currency: 'eur',
-                    appearance: {
-                      theme: 'flat',
-                      variables: {
-                        colorPrimary: '#8B5CF6',
-                      }
-                    } 
-                  }}>
-                    <CheckoutForm 
-                      item={item} 
-                      customerInfo={customerInfo} 
-                      onComplete={(id) => { setBookingId(id); setStep(3); }} 
-                      onSecondaryAction={() => setStep(1)}
-                    />
-                  </Elements>
+                  {stripePromise ? (
+                    <Elements stripe={stripePromise} options={{ 
+                      mode: 'payment', 
+                      amount: Math.round(item.amount * 100), 
+                      currency: 'eur',
+                      appearance: {
+                        theme: 'flat',
+                        variables: {
+                          colorPrimary: '#E8652A',
+                        }
+                      } 
+                    }}>
+                      <CheckoutForm 
+                        item={item} 
+                        customerInfo={customerInfo} 
+                        onComplete={(id) => { setBookingId(id); setStep(3); }} 
+                        onSecondaryAction={() => setStep(1)}
+                      />
+                    </Elements>
+                  ) : (
+                    <div className="text-center py-10 space-y-6">
+                       <AlertCircle className="w-16 h-16 text-amber-500 mx-auto" />
+                       <h3 className="text-xl font-bold text-slate-900">Paiement indisponible</h3>
+                       <p className="text-sm text-slate-500">La configuration du paiement est incomplète. Veuillez contacter l&apos;assistance.</p>
+                       <button onClick={() => setStep(1)} className="w-full py-4 text-slate-900 font-bold border border-slate-200 rounded-2xl">Retour</button>
+                    </div>
+                  )}
                 </motion.div>
               )}
 
@@ -306,10 +371,13 @@ export default function CheckoutModal({ isOpen, onClose, item }: CheckoutModalPr
                     <CheckCircle2 className="w-12 h-12" />
                   </div>
                   <h3 className="text-3xl font-display font-black text-slate-900 mb-4 uppercase italic tracking-tighter">
-                    Réservation <span className="text-green-500">Confirmée</span> !
+                    {item.amount === 0 ? "Demande Envoyée" : "Réservation Confirmée"} !
                   </h3>
                   <p className="text-slate-500 font-medium leading-relaxed max-w-sm mx-auto mb-10">
-                    Votre demande pour <span className="text-slate-900 font-bold">{item.title}</span> a bien été enregistrée. Un mail de confirmation vous sera envoyé d&apos;ici peu.
+                    {item.amount === 0 
+                      ? "Votre demande de devis a bien été transmise. Un expert WIGO vous recontactera d'ici peu avec une proposition tarifaire."
+                      : "Votre demande pour " + item.title + " a bien été enregistrée. Un mail de confirmation vous sera envoyé d'ici peu."
+                    }
                   </p>
                   <div className="bg-slate-50 p-6 rounded-3xl border border-slate-100 text-left mb-8">
                      <div className="flex justify-between items-center mb-4">
@@ -318,7 +386,9 @@ export default function CheckoutModal({ isOpen, onClose, item }: CheckoutModalPr
                      </div>
                      <div className="flex justify-between items-center">
                         <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Statut</span>
-                        <span className="px-3 py-1 bg-green-500 text-white text-[10px] font-black rounded-full uppercase">Confirmé</span>
+                        <span className={`px-3 py-1 text-white text-[10px] font-black rounded-full uppercase ${item.amount === 0 ? 'bg-amber-500' : 'bg-green-500'}`}>
+                           {item.amount === 0 ? 'En attente' : 'Confirmé'}
+                        </span>
                      </div>
                   </div>
                   <button
@@ -328,6 +398,15 @@ export default function CheckoutModal({ isOpen, onClose, item }: CheckoutModalPr
                     Retour au Voyage
                   </button>
                 </motion.div>
+              )}
+
+              {step === 4 && (
+                <div className="text-center py-10 space-y-6">
+                   <AlertCircle className="w-16 h-16 text-red-500 mx-auto" />
+                   <h3 className="text-xl font-bold text-slate-900">Erreur de Configuration</h3>
+                   <p className="text-sm text-slate-500">{blockingError || "Le système de paiement Stripe n&apos;est pas configuré. Veuillez vérifier vos clés d&apos;API."}</p>
+                   <button onClick={() => setStep(1)} className="w-full py-4 text-slate-900 font-bold border border-slate-200 rounded-2xl">Retour</button>
+                </div>
               )}
             </div>
 

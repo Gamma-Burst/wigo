@@ -27,6 +27,7 @@ export default function PricingPage() {
     const [annual, setAnnual] = useState(true);
     const monthlyPrice = 9.99;
     const annualPrice = 6.99;
+    const checkoutHref = `/api/stripe/checkout?billing=${annual ? "annual" : "monthly"}`;
 
     return (
         <main className="min-h-screen bg-background">
@@ -41,7 +42,7 @@ export default function PricingPage() {
                     </div>
                     <h1 className="text-5xl md:text-6xl font-black text-white mb-4">
                         Voyagez plus intelligent.<br />
-                        <span className="bg-gradient-to-r from-accent to-amber-400 bg-clip-text text-transparent">Dépensez moins.</span>
+                        <span className="text-accent">Dépensez moins.</span>
                     </h1>
                     <p className="text-lg text-white/60 max-w-2xl mx-auto">
                         WIGO Pro débloque toute la puissance de l&apos;IA pour trouver, analyser et organiser vos séjours parfaits.
@@ -116,13 +117,13 @@ export default function PricingPage() {
                         </div>
                         <div className="mb-2 relative z-10">
                             <span className="text-5xl font-black">{annual ? annualPrice : monthlyPrice}€</span>
-                            <span className="text-white/70 ml-2">/ mois</span>
+                            <span className="text-white/70 ml-2">{annual ? "/ mois équiv." : "/ mois"}</span>
                         </div>
                         {annual && <p className="text-sm text-white/70 mb-8 relative z-10">Facturé {(annualPrice * 12).toFixed(0)}€/an — Économisez {((monthlyPrice - annualPrice) * 12).toFixed(0)}€</p>}
 
-                        <Link href="/api/stripe/checkout">
+                        <Link href={checkoutHref}>
                             <button className="w-full bg-white text-accent font-black py-4 rounded-2xl transition-all hover:bg-white/90 hover:scale-105 shadow-xl mb-6 relative z-10 text-lg">
-                                🚀 Essayer Pro 7 jours gratuits
+                                Essayer WIGO Pro 7 jours
                             </button>
                         </Link>
 
@@ -183,13 +184,13 @@ export default function PricingPage() {
                 {/* Final CTA */}
                 <div className="text-center bg-gradient-to-br from-accent/10 to-forest/10 border border-accent/20 rounded-3xl p-12">
                     <h3 className="text-3xl font-black text-foreground mb-3">Prêt à voyager plus intelligemment ?</h3>
-                    <p className="text-foreground/60 mb-8">7 jours gratuits. Aucune carte bancaire requise pour commencer.</p>
-                    <Link href="/api/stripe/checkout">
+                    <p className="text-foreground/60 mb-8">7 jours d&apos;essai inclus, puis abonnement {annual ? "annuel" : "mensuel"} avec annulation possible avant l&apos;échéance.</p>
+                    <Link href={checkoutHref}>
                         <button className="bg-accent hover:bg-accent/90 text-white font-black py-4 px-10 rounded-2xl text-lg transition-all hover:scale-105 shadow-xl shadow-accent/30">
-                            Démarrer mon essai gratuit →
+                            Activer mon essai Pro →
                         </button>
                     </Link>
-                    <p className="text-xs text-foreground/40 mt-4">Résiliation possible à tout moment • Sans engagement</p>
+                    <p className="text-xs text-foreground/40 mt-4">Paiement sécurisé via Stripe • Résiliation possible à tout moment</p>
                 </div>
             </div>
         </main>

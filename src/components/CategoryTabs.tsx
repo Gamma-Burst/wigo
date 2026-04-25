@@ -37,9 +37,10 @@ export default function CategoryTabs({ active, onChange }: CategoryTabsProps) {
                         <button
                             key={cat.id}
                             onClick={() => onChange(cat.id)}
+                            aria-pressed={isActive}
                             className={`flex items-center gap-2 px-4 py-2.5 rounded-full text-sm font-semibold transition-all duration-200 whitespace-nowrap border ${isActive
                                     ? "bg-accent text-white border-accent shadow-lg shadow-accent/30 scale-105"
-                                    : "bg-white/10 text-white/70 border-white/20 hover:bg-white/20 hover:text-white hover:border-white/40"
+                                    : "bg-card/90 text-foreground/65 border-[var(--border)] hover:bg-card hover:text-foreground hover:border-[var(--border-strong)]"
                                 }`}
                         >
                             <span className="text-base">{cat.emoji}</span>

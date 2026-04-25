@@ -50,7 +50,7 @@ WigoAI:`;
         const errMsg = err instanceof Error ? err.message : String(err);
         console.error("WigoAI chat error:", errMsg);
         return NextResponse.json({
-            reply: `⚠️ Debug: ${errMsg}`,
+            reply: "Je n'arrive pas à répondre pour le moment. Réessayez dans quelques instants.",
         });
     }
 }
